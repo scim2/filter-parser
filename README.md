@@ -4,15 +4,15 @@
 ## Implemented Operators
 ### Attribute Operators
 - [x] eq
-- [ ] ne
-- [ ] co
-- [ ] sw
-- [ ] ew
-- [ ] pr
-- [ ] gt
-- [ ] ge
-- [ ] lt
-- [ ] le
+- [x] ne
+- [x] co
+- [x] sw
+- [x] ew
+- [x] pr
+- [x] gt
+- [x] ge
+- [x] lt
+- [x] le
 
 ### Logical Operators
 - [ ] and

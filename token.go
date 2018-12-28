@@ -10,5 +10,15 @@ const (
 	EOF  // end-of-file
 	V    // value (i.e. "john")
 
+	// Attribute Operators
 	EQ  // equal
+	NE  // not equal
+	CO  // contains
+	SW  // starts with
+	EW  // ends with
+	PR  // present (has value)
+	GT  // greater than
+	GE  // greater than or equal to
+	LT  // less than
+	LE  // less than or equal to
 )

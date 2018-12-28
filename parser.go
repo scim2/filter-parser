@@ -37,7 +37,7 @@ func (p *Parser) Parse() (*Statement, error) {
 
 	token, literal = p.scanIgnoreWhitespace()
 	switch token {
-	case EQ:
+	case EQ, NE, CO, SW, EW, PR, GT, GE, LT, LE:
 		break
 	default:
 		return nil, fmt.Errorf("found %q, expected operator", literal)

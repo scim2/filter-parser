@@ -25,6 +25,20 @@ func TestScanner_Scan(t *testing.T) {
 		{s: `identifier.id`, token: ID, literal: `identifier.id`},
 
 		{s: `eq`, token: EQ, literal: "eq"},
+		{s: `Eq`, token: EQ, literal: "eq"},
+		{s: `EQ`, token: EQ, literal: "eq"},
+		{s: `eQ`, token: EQ, literal: "eq"},
+
+		{s: `ne`, token: NE, literal: "ne"},
+		{s: `co`, token: CO, literal: "co"},
+		{s: `sw`, token: SW, literal: "sw"},
+		{s: `ew`, token: EW, literal: "ew"},
+		{s: `pr`, token: PR, literal: "pr"},
+		{s: `gt`, token: GT, literal: "gt"},
+		{s: `ge`, token: GE, literal: "ge"},
+		{s: `lt`, token: LT, literal: "lt"},
+		{s: `le`, token: LE, literal: "le"},
+
 
 		// values
 		{s: `"john"`, token: V, literal: `john`},

@@ -39,6 +39,47 @@ func TestParser_Parse(t *testing.T) {
 			},
 		},
 
+		// other operators
+		{
+			s: `username ne "john"`,
+			stmt: &Statement{
+				Name:     "username",
+				Operator: NE,
+				Value:    "john",
+			},
+		},
+		{
+			s: `name.familyName co "doe"`,
+			stmt: &Statement{
+				Name:     "name.familyname",
+				Operator: CO,
+				Value:    "doe",
+			},
+		},
+		{
+			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName sw "j"`,
+			stmt: &Statement{
+				Name:     "username",
+				Operator: SW,
+				Value:    "j",
+			},
+		},
+		{
+			s: `username ew "n"`,
+			stmt: &Statement{
+				Name:     "username",
+				Operator: EW,
+				Value:    "n",
+			},
+		},
+		{
+			s: `title pr`,
+			stmt: &Statement{
+				Name:     `title`,
+				Operator: PR,
+			},
+		},
+
 		// empty value
 		{
 			s: `Username eq`,

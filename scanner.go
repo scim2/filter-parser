@@ -82,7 +82,10 @@ func (s *Scanner) scanIdentifiers() (Token, string) {
 	for {
 		if ch := s.read(); ch == eof {
 			break
-		} else if !isLetter(ch) && ch != '.' {
+		} else if ch == ':' {
+			// removes all runes before last colon
+			buf = bytes.Buffer{}
+		} else if !isLetter(ch) && !isDigit(ch) && ch != '.' {
 			s.unread()
 			break
 		} else {
@@ -90,12 +93,33 @@ func (s *Scanner) scanIdentifiers() (Token, string) {
 		}
 	}
 
-	switch strings.ToLower(buf.String()) {
+	// buf to lower case
+	lower := strings.ToLower(buf.String())
+
+	switch lower {
 	case "eq":
-		return EQ, strings.ToLower(buf.String())
+		return EQ, lower
+	case "ne":
+		return NE, lower
+	case "co":
+		return CO, lower
+	case "sw":
+		return SW, lower
+	case "ew":
+		return EW, lower
+	case "pr":
+		return PR, lower
+	case "gt":
+		return GT, lower
+	case "ge":
+		return GE, lower
+	case "lt":
+		return LT, lower
+	case "le":
+		return LE, lower
 	}
 
-	return ID, strings.ToLower(buf.String())
+	return ID, lower
 }
 
 func (s *Scanner) scanValue() (Token, string) {
@@ -124,6 +148,11 @@ func isWhitespace(ch rune) bool {
 // isLetter checks whether the given rune is a letter (a-zA-Z).
 func isLetter(ch rune) bool {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+}
+
+// isDigit checks wheter the given rune is a digit (0-9)
+func isDigit(ch rune) bool {
+	return ch >= '0' && ch <= '9'
 }
 
 // isDoubleQuote checks whether the given rune is a double quote (\").
