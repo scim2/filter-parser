@@ -3,7 +3,7 @@
 
 ## Implemented Operators
 ### Attribute Operators
-- [ ] eq
+- [x] eq
 - [ ] ne
 - [ ] co
 - [ ] sw
