@@ -1,6 +1,6 @@
 # Query Filter Parser for SCIM v2.0
-[[scim](http://www.simplecloud.info/#Specification)] [[filtering](https://tools.ietf.org/html/rfc7644#section-3.4.2.2)]
-
+links: [[scim](http://www.simplecloud.info/#Specification)] [[filtering](https://tools.ietf.org/html/rfc7644#section-3.4.2.2)] \
+other: [[pratt parser](https://en.wikipedia.org/wiki/Pratt_parser)]
 ## Implemented Operators
 ### Attribute Operators
 - [x] eq
@@ -28,7 +28,7 @@
 Attribute names and attribute operators used in filters are case insensitive.  
 For example, the following two expressions will evaluate to the same logical value:
 
-```json
+```
 filter=userName Eq "john"
 filter=Username eq "john"
 ```
