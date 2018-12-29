@@ -1,14 +1,21 @@
 package scim_filtering
 
 import (
+	"errors"
 	"fmt"
 	"io"
 )
 
-type Statement struct {
+type Expression struct {
 	Name     string
 	Operator Token
 	Value    string
+}
+
+type Statement struct {
+	Operator   Token
+	Expression *Expression
+	Statements []*Statement
 }
 
 // Parser is a parser.
@@ -27,13 +34,24 @@ func NewParser(r io.Reader) *Parser {
 }
 
 func (p *Parser) Parse() (*Statement, error) {
-	stmt := &Statement{}
-
 	token, literal := p.scanIgnoreWhitespace()
-	if token != ID {
+	switch token {
+	case NOT:
+		statement, err := p.Parse()
+		if err != nil {
+			return nil, err
+		}
+		return &Statement{
+			Operator:   NOT,
+			Expression: statement.Expression,
+		}, nil
+	case ID:
+		break
+	default:
 		return nil, fmt.Errorf("found %q, expected identifier", literal)
 	}
-	stmt.Name = literal
+
+	expression := &Expression{Name: literal}
 
 	token, literal = p.scanIgnoreWhitespace()
 	switch token {
@@ -42,15 +60,42 @@ func (p *Parser) Parse() (*Statement, error) {
 	default:
 		return nil, fmt.Errorf("found %q, expected operator", literal)
 	}
-	stmt.Operator = token
+
+	expression.Operator = token
 
 	token, literal = p.scanIgnoreWhitespace()
 	if token != V && literal != "" {
 		return nil, fmt.Errorf("found %q, expected value", token)
 	}
-	stmt.Value = literal
 
-	return stmt, nil
+	expression.Value = literal
+
+	token, literal = p.scanIgnoreWhitespace()
+	if token == EOF {
+		return &Statement{
+			Expression: expression,
+		}, nil
+	}
+
+	switch token {
+	case AND, OR:
+		statement, err := p.Parse()
+		if err != nil {
+			return nil, err
+		}
+		return &Statement{
+			Operator: token,
+			Statements: []*Statement{
+				{
+					Operator:   0,
+					Expression: expression,
+				},
+				statement,
+			},
+		}, nil
+	default:
+		return nil, errors.New("not implemented")
+	}
 }
 
 // scan returns the next token in the scanner.

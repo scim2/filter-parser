@@ -117,6 +117,13 @@ func (s *Scanner) scanIdentifiers() (Token, string) {
 		return LT, lower
 	case "le":
 		return LE, lower
+
+	case "and":
+		return AND, lower
+	case "or":
+		return OR, lower
+	case "not":
+		return NOT, lower
 	}
 
 	return ID, lower

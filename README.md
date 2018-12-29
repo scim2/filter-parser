@@ -15,9 +15,10 @@
 - [x] le
 
 ### Logical Operators
-- [ ] and
-- [ ] or
-- [ ] not
+- [x] and
+- [x] or
+- [x] not
+- [ ] precedence
 
 ### Grouping Operators
 - [ ] ( )

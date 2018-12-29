@@ -21,4 +21,9 @@ const (
 	GE  // greater than or equal to
 	LT  // less than
 	LE  // less than or equal to
+
+	// Logical Operators
+	AND  // logical "and
+	OR   // logical "or"
+	NOT  // "not" function
 )
