@@ -1,22 +1,9 @@
 package scim_filtering
 
 import (
-	"errors"
 	"fmt"
 	"io"
 )
-
-type Expression struct {
-	Name     string
-	Operator Token
-	Value    string
-}
-
-type Statement struct {
-	Operator   Token
-	Expression *Expression
-	Statements []*Statement
-}
 
 // Parser is a parser.
 type Parser struct {
@@ -33,69 +20,63 @@ func NewParser(r io.Reader) *Parser {
 	return &Parser{s: NewScanner(r)}
 }
 
-func (p *Parser) Parse() (*Statement, error) {
+func (p *Parser) Parse() (Expression, error) {
+	return p.expression(LowestPrecedence)
+}
+
+func (p *Parser) expression(precedence int) (Expression, error) {
+	var left interface{}
 	token, literal := p.scanIgnoreWhitespace()
 	switch token {
-	case NOT:
-		statement, err := p.Parse()
-		if err != nil {
-			return nil, err
-		}
-		return &Statement{
-			Operator:   NOT,
-			Expression: statement.Expression,
-		}, nil
+	case UNKNOWN:
+		return nil, fmt.Errorf("unknown token: %q", literal)
 	case ID:
-		break
-	default:
-		return nil, fmt.Errorf("found %q, expected identifier", literal)
-	}
+		operator, operatorLiteral := p.scanIgnoreWhitespace()
+		if !operator.IsOperator() {
+			return nil, fmt.Errorf("found %q, expected operator", operatorLiteral)
+		}
 
-	expression := &Expression{Name: literal}
+		value, valueLiteral := p.scanIgnoreWhitespace()
+		if value != V && valueLiteral != "" {
+			return nil, fmt.Errorf("found %q, expected value", token)
+		}
 
-	token, literal = p.scanIgnoreWhitespace()
-	switch token {
-	case EQ, NE, CO, SW, EW, PR, GT, GE, LT, LE:
-		break
-	default:
-		return nil, fmt.Errorf("found %q, expected operator", literal)
-	}
-
-	expression.Operator = token
-
-	token, literal = p.scanIgnoreWhitespace()
-	if token != V && literal != "" {
-		return nil, fmt.Errorf("found %q, expected value", token)
-	}
-
-	expression.Value = literal
-
-	token, literal = p.scanIgnoreWhitespace()
-	if token == EOF {
-		return &Statement{
-			Expression: expression,
-		}, nil
-	}
-
-	switch token {
-	case AND, OR:
-		statement, err := p.Parse()
+		left = ValueExpression{
+			Name:     literal,
+			Operator: operator,
+			Value:    valueLiteral,
+		}
+	case NOT:
+		expression, err := p.expression(HighestPrecedence)
 		if err != nil {
 			return nil, err
 		}
-		return &Statement{
-			Operator: token,
-			Statements: []*Statement{
-				{
-					Operator:   0,
-					Expression: expression,
-				},
-				statement,
-			},
-		}, nil
-	default:
-		return nil, errors.New("not implemented")
+		left = UnaryExpression{
+			X:        expression,
+			Operator: NOT,
+		}
 	}
+
+	if p.peek() == EOF {
+		return left, nil
+	}
+
+	for precedence < p.peek().Precedence() {
+		token, _ := p.scanIgnoreWhitespace()
+		if token.IsAssociative() {
+			expression, err := p.expression(token.Precedence())
+			if err != nil {
+				return nil, err
+			}
+			left = BinaryExpression{
+				X:        left,
+				Operator: token,
+				Y:        expression,
+			}
+		}
+	}
+
+	return left, nil
 }
 
 // scan returns the next token in the scanner.
@@ -114,6 +95,16 @@ func (p *Parser) scan() (Token, string) {
 // unscan places the last read token back in the buffer.
 func (p *Parser) unscan() {
 	p.buf.n = 1
+}
+
+func (p *Parser) peek() Token {
+	token, _ := p.scan()
+	if token == WS {
+		token, _ = p.scan()
+		p.unscan()
+	}
+	p.unscan()
+	return token
 }
 
 // scanIgnoreWhiteSpace scans the next token that is not whitespace.

@@ -6,116 +6,90 @@ import (
 	"testing"
 )
 
-func TestParser_AtributeOperators(t *testing.T) {
+func TestParser_ValueExpression(t *testing.T) {
 	var tests = []struct {
 		s    string
-		stmt *Statement
+		expr Expression
 		err  string
 	}{
 		// eq operator
 		{
 			s: `userName Eq "john"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: EQ,
-					Value:    "john",
-				},
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: EQ,
+				Value:    "john",
 			},
 		},
-
 		{
-			s: `Username eq "john"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: EQ,
-					Value:    "john",
-				},
+			s: `userName Eq "john"`,
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: EQ,
+				Value:    "john",
 			},
 		},
 		{
 			s: `name.formatted eq "john doe"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "name.formatted",
-					Operator: EQ,
-					Value:    "john doe",
-				},
+			expr: ValueExpression{
+				Name:     "name.formatted",
+				Operator: EQ,
+				Value:    "john doe",
 			},
 		},
 
 		// other operators
 		{
 			s: `username ne "john"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: NE,
-					Value:    "john",
-				},
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: NE,
+				Value:    "john",
 			},
 		},
 		{
 			s: `name.familyName co "doe"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "name.familyname",
-					Operator: CO,
-					Value:    "doe",
-				},
+			expr: ValueExpression{
+				Name:     "name.familyname",
+				Operator: CO,
+				Value:    "doe",
 			},
 		},
 		{
 			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName sw "j"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: SW,
-					Value:    "j",
-				},
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: SW,
+				Value:    "j",
 			},
 		},
 		{
 			s: `username ew "n"`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: EW,
-					Value:    "n",
-				},
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: EW,
+				Value:    "n",
 			},
 		},
 		{
 			s: `title pr`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     `title`,
-					Operator: PR,
-				},
+			expr: ValueExpression{
+				Name:     `title`,
+				Operator: PR,
 			},
 		},
+
 
 		// empty value
 		{
 			s: `Username eq`,
-			stmt: &Statement{
-				Operator: 0,
-				Expression: &Expression{
-					Name:     "username",
-					Operator: EQ,
-				},
+			expr: ValueExpression{
+				Name:     "username",
+				Operator: EQ,
 			},
 		},
 
+		// invalid operator
 		{
 			s:   `error x "value"`,
 			err: `found "x", expected operator`,
@@ -123,11 +97,11 @@ func TestParser_AtributeOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		stmt, err := NewParser(strings.NewReader(test.s)).Parse()
+		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
-			t.Errorf("%d. %q: wrong error:\n  exp=%s\n  got=%s\n\n", i, test.s, test.err, err)
-		} else if test.err == "" && !reflect.DeepEqual(test.stmt, stmt) {
-			t.Errorf("%d. %q\n\nwrong stmt:\n\nexp=%#v\n\ngot=%#v\n\n", i, test.s, test.stmt, stmt)
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
 		}
 	}
 }
@@ -135,69 +109,103 @@ func TestParser_AtributeOperators(t *testing.T) {
 func TestParser_LogicalOperators(t *testing.T) {
 	var tests = []struct {
 		s    string
-		stmt *Statement
+		expr Expression
 		err  string
 	}{
+		// not operator
 		{
 			s: `not emails co "example.com"`,
-			stmt: &Statement{
+			expr: UnaryExpression{
 				Operator: NOT,
-				Expression: &Expression{
+				X: ValueExpression{
 					Name:     "emails",
 					Operator: CO,
 					Value:    "example.com",
 				},
 			},
 		},
-		{
-			s:   `and emails co "example.com"`,
-			err: `found "and", expected identifier`,
-		},
 
+		// and operator
 		{
 			s: `emails co "example.com" and emails co "example.org"`,
-			stmt: &Statement{
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.com",
+				},
 				Operator: AND,
-				Statements: []*Statement{
-					{
-						Operator: 0,
-						Expression: &Expression{
-							Name:     "emails",
-							Operator: CO,
-							Value:    "example.com",
-						},
+				Y: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
+				},
+			},
+		},
+
+		// or operator
+		{
+			s: `emails co "example.com" or emails co "example.org"`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.com",
+				},
+				Operator: OR,
+				Y: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
+				},
+			},
+		},
+
+		// precedence
+		{
+			s: `emails co "example.com" and emails co "example.org" or emails co "example.be"`,
+			expr: BinaryExpression{
+				X: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.com",
 					},
-					{
-						Operator: 0,
-						Expression: &Expression{
-							Name:     "emails",
-							Operator: CO,
-							Value:    "example.org",
-						},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.org",
 					},
+				},
+				Operator: OR,
+				Y: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.be",
 				},
 			},
 		},
 		{
-			s: `emails co "example.com" or emails co "example.org"`,
-			stmt: &Statement{
+			s: `emails co "example.be" or emails co "example.com" and emails co "example.org"`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.be",
+				},
 				Operator: OR,
-				Statements: []*Statement{
-					{
-						Operator: 0,
-						Expression: &Expression{
-							Name:     "emails",
-							Operator: CO,
-							Value:    "example.com",
-						},
+				Y: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.com",
 					},
-					{
-						Operator: 0,
-						Expression: &Expression{
-							Name:     "emails",
-							Operator: CO,
-							Value:    "example.org",
-						},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.org",
 					},
 				},
 			},
@@ -205,11 +213,11 @@ func TestParser_LogicalOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		stmt, err := NewParser(strings.NewReader(test.s)).Parse()
+		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
-			t.Errorf("%d. %q: wrong error:\n  exp=%s\n  got=%s\n\n", i, test.s, test.err, err)
-		} else if test.err == "" && !reflect.DeepEqual(test.stmt, stmt) {
-			t.Errorf("%d. %q\n\nwrong stmt:\n\nexp=%#v\n\ngot=%#v\n\n", i, test.s, test.stmt, stmt)
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
 		}
 	}
 }

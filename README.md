@@ -18,7 +18,7 @@
 - [x] and
 - [x] or
 - [x] not
-- [ ] precedence
+- [x] precedence
 
 ### Grouping Operators
 - [ ] ( )
