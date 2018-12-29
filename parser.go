@@ -57,10 +57,6 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 		}
 	}
 
-	if p.peek() == EOF {
-		return left, nil
-	}
-
 	for precedence < p.peek().Precedence() {
 		token, _ := p.scanIgnoreWhitespace()
 		if token.IsAssociative() {
