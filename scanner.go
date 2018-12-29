@@ -129,6 +129,7 @@ func (s *Scanner) scanIdentifiers() (Token, string) {
 	return ID, lower
 }
 
+// scanValue removes current rune and all the value runes after it.
 func (s *Scanner) scanValue() (Token, string) {
 	var buf bytes.Buffer
 	_ = s.read()

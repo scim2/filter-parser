@@ -2,8 +2,6 @@ package scim_filtering
 
 import "fmt"
 
-// Abstract Syntax Tree
-
 type Expression interface{}
 
 type ValueExpression struct {

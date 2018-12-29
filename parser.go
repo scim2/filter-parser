@@ -20,10 +20,12 @@ func NewParser(r io.Reader) *Parser {
 	return &Parser{s: NewScanner(r)}
 }
 
+// Parse returns an abstract syntax tree of the string in the scanner.
 func (p *Parser) Parse() (Expression, error) {
 	return p.expression(LowestPrecedence)
 }
 
+// expression is the implementation of the Pratt parser.
 func (p *Parser) expression(precedence int) (Expression, error) {
 	var left interface{}
 	token, literal := p.scanIgnoreWhitespace()
@@ -93,6 +95,7 @@ func (p *Parser) unscan() {
 	p.buf.n = 1
 }
 
+// peek returns the next token in the scanner that is not whitespace.
 func (p *Parser) peek() Token {
 	token, _ := p.scan()
 	if token == WS {

@@ -28,6 +28,7 @@ const (
 	NOT  // "not" function
 )
 
+// string representation of the tokens.
 var tokens = [...]string{
 	UNKNOWN: "unknown",
 
@@ -52,6 +53,7 @@ var tokens = [...]string{
 	NOT: "not",
 }
 
+// IsOperator returns whether the token is an operator.
 func (token Token) IsOperator() bool {
 	switch token {
 	case EQ, NE, CO, SW, EW, PR, GT, GE, LT, LE:
@@ -60,6 +62,7 @@ func (token Token) IsOperator() bool {
 	return false
 }
 
+// IsAssociative return whether the token in associative.
 func (token Token) IsAssociative() bool {
 	switch token {
 	case AND, OR:
@@ -73,6 +76,7 @@ const (
 	LowestPrecedence  = 0
 )
 
+// Precedence returns the precedence value of the token.
 func (token Token) Precedence() int {
 	switch token {
 	case AND:
