@@ -32,6 +32,17 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 	switch token {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
+	case LPAR:
+		expression, err := p.expression(LowestPrecedence)
+		if err != nil {
+			return nil, err
+		}
+		parenthesis, parenthesisLiteral := p.scanIgnoreWhitespace()
+		if parenthesis != RPAR {
+			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
+		}
+
+		left = expression
 	case ID:
 		operator, operatorLiteral := p.scanIgnoreWhitespace()
 		if !operator.IsOperator() {

@@ -21,7 +21,7 @@ other: [[pratt parser](https://en.wikipedia.org/wiki/Pratt_parser)]
 - [x] precedence
 
 ### Grouping Operators
-- [ ] ( )
+- [x] ( )
 - [ ] [ ]
 
 ## Case Sensitivity

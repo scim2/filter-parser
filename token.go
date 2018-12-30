@@ -26,6 +26,10 @@ const (
 	AND  // logical "and
 	OR   // logical "or"
 	NOT  // "not" function
+
+	// Grouping Operators
+	LPAR  // left parenthesis
+	RPAR  // right parenthesis
 )
 
 // string representation of the tokens.
@@ -51,6 +55,9 @@ var tokens = [...]string{
 	AND: "and",
 	OR:  "or",
 	NOT: "not",
+
+	LPAR: "(",
+	RPAR: ")",
 }
 
 // IsOperator returns whether the token is an operator.

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestParser_ValueExpression(t *testing.T) {
+func TestParser_AttributeOperators(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -207,6 +207,92 @@ func TestParser_LogicalOperators(t *testing.T) {
 						Operator: CO,
 						Value:    "example.org",
 					},
+				},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		expr, err := NewParser(strings.NewReader(test.s)).Parse()
+		if !reflect.DeepEqual(test.err, errToString(err)) {
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
+		}
+	}
+}
+
+func TestParser_GroupingOperators(t *testing.T) {
+	var tests = []struct {
+		s    string
+		expr Expression
+		err  string
+	}{
+		// parenthesis
+		{
+			s: `(emails co "example.be" or emails co "example.com") and emails co "example.org"`,
+			expr: BinaryExpression{
+				X: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.be",
+					},
+					Operator: OR,
+					Y: ValueExpression{
+						Name:     "emails",
+						Operator: CO,
+						Value:    "example.com",
+					},
+				},
+				Operator: AND,
+				Y: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
+				},
+			},
+		},
+		{
+			s: `emails co "example.org" and not (emails co "example.be" or emails co "example.com")`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
+				},
+				Operator: AND,
+				Y: UnaryExpression{
+					X: BinaryExpression{
+						X: ValueExpression{
+							Name:     "emails",
+							Operator: CO,
+							Value:    "example.be",
+						},
+						Operator: OR,
+						Y: ValueExpression{
+							Name:     "emails",
+							Operator: CO,
+							Value:    "example.com",
+						},
+					},
+					Operator: NOT,
+				},
+			},
+		},
+		{
+			s: `emails co "example.com" and (emails co "example.org")`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.com",
+				},
+				Operator: AND,
+				Y: ValueExpression{
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
 				},
 			},
 		},

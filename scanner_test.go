@@ -43,6 +43,9 @@ func TestScanner_Scan(t *testing.T) {
 		{s: "or", token: OR, literal: "or"},
 		{s: "not", token: NOT, literal: "not"},
 
+		{s: "(", token: LPAR, literal: "("},
+		{s: ")", token: RPAR, literal: ")"},
+
 		// values
 		{s: `"john"`, token: V, literal: `john`},
 	}

@@ -35,6 +35,10 @@ func (s *Scanner) Scan() (Token, string) {
 	switch ch {
 	case eof:
 		return EOF, ""
+	case '(':
+		return LPAR, string(ch)
+	case ')':
+		return RPAR, string(ch)
 	}
 
 	return UNKNOWN, string(ch)
