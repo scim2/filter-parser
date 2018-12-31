@@ -22,7 +22,7 @@ other: [[pratt parser](https://en.wikipedia.org/wiki/Pratt_parser)]
 
 ### Grouping Operators
 - [x] ( )
-- [ ] [ ]
+- [x] [ ]
 
 ## Case Sensitivity
 Attribute names and attribute operators used in filters are case insensitive.  

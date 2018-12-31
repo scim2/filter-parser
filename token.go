@@ -30,6 +30,8 @@ const (
 	// Grouping Operators
 	LPAR  // left parenthesis
 	RPAR  // right parenthesis
+	LBRA  // left bracket
+	RBRA  // right bracket
 )
 
 // string representation of the tokens.
@@ -58,6 +60,8 @@ var tokens = [...]string{
 
 	LPAR: "(",
 	RPAR: ")",
+	LBRA: "[",
+	RBRA: "]",
 }
 
 // IsOperator returns whether the token is an operator.

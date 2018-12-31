@@ -45,6 +45,8 @@ func TestScanner_Scan(t *testing.T) {
 
 		{s: "(", token: LPAR, literal: "("},
 		{s: ")", token: RPAR, literal: ")"},
+		{s: "[", token: LBRA, literal: "["},
+		{s: "]", token: RBRA, literal: "]"},
 
 		// values
 		{s: `"john"`, token: V, literal: `john`},

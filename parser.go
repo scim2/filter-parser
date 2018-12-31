@@ -7,8 +7,9 @@ import (
 
 // Parser is a parser.
 type Parser struct {
-	s   *Scanner
-	buf struct {
+	s      *Scanner
+	prefix string
+	buf    struct {
 		token   Token  // last read token
 		literal string // last read literal
 		n       int    // buffer size (max = 1)
@@ -29,6 +30,12 @@ func (p *Parser) Parse() (Expression, error) {
 func (p *Parser) expression(precedence int) (Expression, error) {
 	var left interface{}
 	token, literal := p.scanIgnoreWhitespace()
+
+	if p.peek() == LBRA {
+		p.prefix = literal
+		token, literal = p.scanIgnoreWhitespace()
+	}
+
 	switch token {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
@@ -43,6 +50,18 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 		}
 
 		left = expression
+	case LBRA:
+		expression, err := p.expression(LowestPrecedence)
+		if err != nil {
+			return nil, err
+		}
+		parenthesis, parenthesisLiteral := p.scanIgnoreWhitespace()
+		if parenthesis != RBRA {
+			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
+		}
+
+		p.prefix = ""
+		left = expression
 	case ID:
 		operator, operatorLiteral := p.scanIgnoreWhitespace()
 		if !operator.IsOperator() {
@@ -52,6 +71,10 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 		value, valueLiteral := p.scanIgnoreWhitespace()
 		if value != V && valueLiteral != "" {
 			return nil, fmt.Errorf("found %q, expected value", token)
+		}
+
+		if p.prefix != "" {
+			literal = p.prefix + "." + literal
 		}
 
 		left = ValueExpression{

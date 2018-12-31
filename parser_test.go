@@ -222,7 +222,7 @@ func TestParser_LogicalOperators(t *testing.T) {
 	}
 }
 
-func TestParser_GroupingOperators(t *testing.T) {
+func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -293,6 +293,105 @@ func TestParser_GroupingOperators(t *testing.T) {
 					Name:     "emails",
 					Operator: CO,
 					Value:    "example.org",
+				},
+			},
+		},
+		{
+			s: `emails co "example.org" and (emails.type eq "work" and emails.value co "example.org")`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name: "emails",
+					Operator:CO,
+					Value: "example.org",
+				},
+				Operator: AND,
+				Y: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails.type",
+						Operator: EQ,
+						Value:    "work",
+					},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails.value",
+						Operator: CO,
+						Value:    "example.org",
+					},
+				},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		expr, err := NewParser(strings.NewReader(test.s)).Parse()
+		if !reflect.DeepEqual(test.err, errToString(err)) {
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
+		}
+	}
+}
+
+func TestParser_GroupingOperators_Brackets(t *testing.T) {
+	var tests = []struct {
+		s    string
+		expr Expression
+		err  string
+	}{
+		// brackets
+		{
+			s: `emails co "example.org" and emails[type eq "work" and value co "example.org"]`,
+			expr: BinaryExpression{
+				X: ValueExpression{
+					Name: "emails",
+					Operator:CO,
+					Value: "example.org",
+				},
+				Operator: AND,
+				Y: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails.type",
+						Operator: EQ,
+						Value:    "work",
+					},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails.value",
+						Operator: CO,
+						Value:    "example.org",
+					},
+				},
+			},
+		},
+		{
+			s: `emails[type eq "work" and value co "example.org"] or emails[type eq "private" and value co "example.com"]`,
+			expr: BinaryExpression{
+				X: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails.type",
+						Operator: EQ,
+						Value:    "work",
+					},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails.value",
+						Operator: CO,
+						Value:    "example.org",
+					},
+				},
+				Operator: OR,
+				Y: BinaryExpression{
+					X: ValueExpression{
+						Name:     "emails.type",
+						Operator: EQ,
+						Value:    "private",
+					},
+					Operator: AND,
+					Y: ValueExpression{
+						Name:     "emails.value",
+						Operator: CO,
+						Value:    "example.com",
+					},
 				},
 			},
 		},

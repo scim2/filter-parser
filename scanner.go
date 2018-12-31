@@ -39,6 +39,10 @@ func (s *Scanner) Scan() (Token, string) {
 		return LPAR, string(ch)
 	case ')':
 		return RPAR, string(ch)
+	case '[':
+		return LBRA, string(ch)
+	case ']':
+		return RBRA, string(ch)
 	}
 
 	return UNKNOWN, string(ch)
@@ -162,7 +166,7 @@ func isLetter(ch rune) bool {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
 }
 
-// isDigit checks wheter the given rune is a digit (0-9)
+// isDigit checks whether the given rune is a digit (0-9)
 func isDigit(ch rune) bool {
 	return ch >= '0' && ch <= '9'
 }
