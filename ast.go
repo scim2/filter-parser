@@ -1,4 +1,4 @@
-package scim_filtering
+package scim_filter_parser
 
 import "fmt"
 
