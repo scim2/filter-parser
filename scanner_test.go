@@ -13,16 +13,16 @@ func TestScanner_Scan(t *testing.T) {
 	}{
 		// special tokens
 		{s: ``, token: EOF},
-		{s: ` `, token: WS, literal: " "},
-		{s: "\n", token: WS, literal: "\n"},
-		{s: "\t", token: WS, literal: "\t"},
+		{s: ` `, token: WHITESPACE, literal: " "},
+		{s: "\n", token: WHITESPACE, literal: "\n"},
+		{s: "\t", token: WHITESPACE, literal: "\t"},
 
 		// unknown tokens
 		{s: `#`, token: UNKNOWN, literal: `#`},
 
 		// identifiers
-		{s: `identifier`, token: ID, literal: `identifier`},
-		{s: `identifier.id`, token: ID, literal: `identifier.id`},
+		{s: `identifier`, token: IDENTIFIER, literal: `identifier`},
+		{s: `identifier.id`, token: IDENTIFIER, literal: `identifier.id`},
 
 		{s: `eq`, token: EQ, literal: "eq"},
 		{s: `Eq`, token: EQ, literal: "eq"},
@@ -43,13 +43,13 @@ func TestScanner_Scan(t *testing.T) {
 		{s: "or", token: OR, literal: "or"},
 		{s: "not", token: NOT, literal: "not"},
 
-		{s: "(", token: LPAR, literal: "("},
-		{s: ")", token: RPAR, literal: ")"},
-		{s: "[", token: LBRA, literal: "["},
-		{s: "]", token: RBRA, literal: "]"},
+		{s: "(", token: LeftParenthesis, literal: "("},
+		{s: ")", token: RightParenthesis, literal: ")"},
+		{s: "[", token: LeftBracket, literal: "["},
+		{s: "]", token: RightBracket, literal: "]"},
 
 		// values
-		{s: `"john"`, token: V, literal: `john`},
+		{s: `"john"`, token: VALUE, literal: `john`},
 	}
 
 	for i, test := range tests {

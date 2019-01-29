@@ -18,31 +18,31 @@ func NewScanner(r io.Reader) *Scanner {
 }
 
 // Scan returns the next token and literal value.
-func (s *Scanner) Scan() (Token, string) {
-	ch := s.read()
+func (scanner *Scanner) Scan() (Token, string) {
+	ch := scanner.read()
 
 	if isWhitespace(ch) {
-		s.unread()
-		return s.scanWhitespace()
+		scanner.unread()
+		return scanner.scanWhitespace()
 	} else if isLetter(ch) {
-		s.unread()
-		return s.scanIdentifiers()
+		scanner.unread()
+		return scanner.scanIdentifiers()
 	} else if isDoubleQuote(ch) {
-		s.unread()
-		return s.scanValue()
+		scanner.unread()
+		return scanner.scanValue()
 	}
 
 	switch ch {
 	case eof:
 		return EOF, ""
 	case '(':
-		return LPAR, string(ch)
+		return LeftParenthesis, string(ch)
 	case ')':
-		return RPAR, string(ch)
+		return RightParenthesis, string(ch)
 	case '[':
-		return LBRA, string(ch)
+		return LeftBracket, string(ch)
 	case ']':
-		return RBRA, string(ch)
+		return RightBracket, string(ch)
 	}
 
 	return UNKNOWN, string(ch)
@@ -50,8 +50,8 @@ func (s *Scanner) Scan() (Token, string) {
 
 // read reads the next character from the reader.
 // Returns the rune(0) if an error occurs.
-func (s *Scanner) read() rune {
-	ch, _, err := s.r.ReadRune()
+func (scanner *Scanner) read() rune {
+	ch, _, err := scanner.r.ReadRune()
 	if err != nil {
 		return eof
 	}
@@ -59,42 +59,42 @@ func (s *Scanner) read() rune {
 }
 
 // unread places last rune back in the reader.
-func (s *Scanner) unread() {
-	_ = s.r.UnreadRune()
+func (scanner *Scanner) unread() {
+	_ = scanner.r.UnreadRune()
 }
 
 // scanWhitespace removes current rune and all the whitespace after it.
-func (s *Scanner) scanWhitespace() (Token, string) {
+func (scanner *Scanner) scanWhitespace() (Token, string) {
 	var buf bytes.Buffer
-	buf.WriteRune(s.read())
+	buf.WriteRune(scanner.read())
 
 	for {
-		if ch := s.read(); ch == eof {
+		if ch := scanner.read(); ch == eof {
 			break
 		} else if !isWhitespace(ch) {
-			s.unread()
+			scanner.unread()
 			break
 		} else {
 			buf.WriteRune(ch)
 		}
 	}
 
-	return WS, buf.String()
+	return WHITESPACE, buf.String()
 }
 
 // scanIdentifiers removes current rune and all the identifier runes after it.
-func (s *Scanner) scanIdentifiers() (Token, string) {
+func (scanner *Scanner) scanIdentifiers() (Token, string) {
 	var buf bytes.Buffer
-	buf.WriteRune(s.read())
+	buf.WriteRune(scanner.read())
 
 	for {
-		if ch := s.read(); ch == eof {
+		if ch := scanner.read(); ch == eof {
 			break
 		} else if ch == ':' {
 			// removes all runes before last colon
 			buf = bytes.Buffer{}
 		} else if !isLetter(ch) && !isDigit(ch) && ch != '.' {
-			s.unread()
+			scanner.unread()
 			break
 		} else {
 			_, _ = buf.WriteRune(ch)
@@ -134,17 +134,17 @@ func (s *Scanner) scanIdentifiers() (Token, string) {
 		return NOT, lower
 	}
 
-	return ID, lower
+	return IDENTIFIER, lower
 }
 
 // scanValue removes current rune and all the value runes after it.
-func (s *Scanner) scanValue() (Token, string) {
+func (scanner *Scanner) scanValue() (Token, string) {
 	var buf bytes.Buffer
-	_ = s.read()
-	buf.WriteRune(s.read())
+	_ = scanner.read()
+	buf.WriteRune(scanner.read())
 
 	for {
-		if ch := s.read(); ch == eof {
+		if ch := scanner.read(); ch == eof {
 			break
 		} else if isDoubleQuote(ch) {
 			break
@@ -153,27 +153,27 @@ func (s *Scanner) scanValue() (Token, string) {
 		}
 	}
 
-	return V, buf.String()
+	return VALUE, buf.String()
 }
 
 // isWhitespace checks whether the given rune is a whitespace.
-func isWhitespace(ch rune) bool {
-	return ch == ' ' || ch == '\n' || ch == '\t'
+func isWhitespace(char rune) bool {
+	return char == ' ' || char == '\n' || char == '\t'
 }
 
 // isLetter checks whether the given rune is a letter (a-zA-Z).
-func isLetter(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+func isLetter(char rune) bool {
+	return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')
 }
 
 // isDigit checks whether the given rune is a digit (0-9)
-func isDigit(ch rune) bool {
-	return ch >= '0' && ch <= '9'
+func isDigit(char rune) bool {
+	return char >= '0' && char <= '9'
 }
 
 // isDoubleQuote checks whether the given rune is a double quote (\").
-func isDoubleQuote(ch rune) bool {
-	return ch == '"'
+func isDoubleQuote(char rune) bool {
+	return char == '"'
 }
 
 var eof = rune(0)

@@ -22,59 +22,59 @@ func NewParser(r io.Reader) *Parser {
 }
 
 // Parse returns an abstract syntax tree of the string in the scanner.
-func (p *Parser) Parse() (Expression, error) {
-	return p.expression(LowestPrecedence)
+func (parser *Parser) Parse() (Expression, error) {
+	return parser.expression(LowestPrecedence)
 }
 
 // expression is the implementation of the Pratt parser.
-func (p *Parser) expression(precedence int) (Expression, error) {
+func (parser *Parser) expression(precedence int) (Expression, error) {
 	var left interface{}
-	token, literal := p.scanIgnoreWhitespace()
+	token, literal := parser.scanIgnoreWhitespace()
 
-	if p.peek() == LBRA {
-		p.prefix = literal
-		token, literal = p.scanIgnoreWhitespace()
+	if parser.peek() == LeftBracket {
+		parser.prefix = literal
+		token, literal = parser.scanIgnoreWhitespace()
 	}
 
 	switch token {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
-	case LPAR:
-		expression, err := p.expression(LowestPrecedence)
+	case LeftParenthesis:
+		expression, err := parser.expression(LowestPrecedence)
 		if err != nil {
 			return nil, err
 		}
-		parenthesis, parenthesisLiteral := p.scanIgnoreWhitespace()
-		if parenthesis != RPAR {
+		parenthesis, parenthesisLiteral := parser.scanIgnoreWhitespace()
+		if parenthesis != RightParenthesis {
 			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
 		}
 
 		left = expression
-	case LBRA:
-		expression, err := p.expression(LowestPrecedence)
+	case LeftBracket:
+		expression, err := parser.expression(LowestPrecedence)
 		if err != nil {
 			return nil, err
 		}
-		parenthesis, parenthesisLiteral := p.scanIgnoreWhitespace()
-		if parenthesis != RBRA {
+		parenthesis, parenthesisLiteral := parser.scanIgnoreWhitespace()
+		if parenthesis != RightBracket {
 			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
 		}
 
-		p.prefix = ""
+		parser.prefix = ""
 		left = expression
-	case ID:
-		operator, operatorLiteral := p.scanIgnoreWhitespace()
+	case IDENTIFIER:
+		operator, operatorLiteral := parser.scanIgnoreWhitespace()
 		if !operator.IsOperator() {
 			return nil, fmt.Errorf("found %q, expected operator", operatorLiteral)
 		}
 
-		value, valueLiteral := p.scanIgnoreWhitespace()
-		if value != V && valueLiteral != "" {
+		value, valueLiteral := parser.scanIgnoreWhitespace()
+		if value != VALUE && valueLiteral != "" {
 			return nil, fmt.Errorf("found %q, expected value", token)
 		}
 
-		if p.prefix != "" {
-			literal = p.prefix + "." + literal
+		if parser.prefix != "" {
+			literal = parser.prefix + "." + literal
 		}
 
 		left = ValueExpression{
@@ -83,7 +83,7 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 			Value:    valueLiteral,
 		}
 	case NOT:
-		expression, err := p.expression(HighestPrecedence)
+		expression, err := parser.expression(HighestPrecedence)
 		if err != nil {
 			return nil, err
 		}
@@ -93,10 +93,10 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 		}
 	}
 
-	for precedence < p.peek().Precedence() {
-		token, _ := p.scanIgnoreWhitespace()
+	for precedence < parser.peek().Precedence() {
+		token, _ := parser.scanIgnoreWhitespace()
 		if token.IsAssociative() {
-			expression, err := p.expression(token.Precedence())
+			expression, err := parser.expression(token.Precedence())
 			if err != nil {
 				return nil, err
 			}
@@ -112,39 +112,39 @@ func (p *Parser) expression(precedence int) (Expression, error) {
 }
 
 // scan returns the next token in the scanner.
-func (p *Parser) scan() (Token, string) {
-	if p.buf.n != 0 {
-		p.buf.n = 0
-		return p.buf.token, p.buf.literal
+func (parser *Parser) scan() (Token, string) {
+	if parser.buf.n != 0 {
+		parser.buf.n = 0
+		return parser.buf.token, parser.buf.literal
 	}
 
-	token, literal := p.s.Scan()
-	p.buf.token, p.buf.literal = token, literal
+	token, literal := parser.s.Scan()
+	parser.buf.token, parser.buf.literal = token, literal
 
 	return token, literal
 }
 
 // unscan places the last read token back in the buffer.
-func (p *Parser) unscan() {
-	p.buf.n = 1
+func (parser *Parser) unscan() {
+	parser.buf.n = 1
 }
 
 // peek returns the next token in the scanner that is not whitespace.
-func (p *Parser) peek() Token {
-	token, _ := p.scan()
-	if token == WS {
-		token, _ = p.scan()
-		p.unscan()
+func (parser *Parser) peek() Token {
+	token, _ := parser.scan()
+	if token == WHITESPACE {
+		token, _ = parser.scan()
+		parser.unscan()
 	}
-	p.unscan()
+	parser.unscan()
 	return token
 }
 
 // scanIgnoreWhiteSpace scans the next token that is not whitespace.
-func (p *Parser) scanIgnoreWhitespace() (Token, string) {
-	token, literal := p.scan()
-	if token == WS {
-		token, literal = p.scan()
+func (parser *Parser) scanIgnoreWhitespace() (Token, string) {
+	token, literal := parser.scan()
+	if token == WHITESPACE {
+		token, literal = parser.scan()
 	}
 	return token, literal
 }

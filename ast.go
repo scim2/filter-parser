@@ -24,14 +24,14 @@ type BinaryExpression struct {
 	Y        Expression
 }
 
-func (e ValueExpression) String() string {
-	return fmt.Sprintf("'%s %s %s'", e.Name, e.Operator, e.Value)
+func (expression ValueExpression) String() string {
+	return fmt.Sprintf("'%s %s %s'", expression.Name, expression.Operator, expression.Value)
 }
 
-func (e UnaryExpression) String() string {
-	return fmt.Sprintf("%s %s", e.Operator, e.X)
+func (expression UnaryExpression) String() string {
+	return fmt.Sprintf("%s %s", expression.Operator, expression.X)
 }
 
-func (e BinaryExpression) String() string {
-	return fmt.Sprintf("(%s %s %s)", e.X, e.Operator, e.Y)
+func (expression BinaryExpression) String() string {
+	return fmt.Sprintf("(%s %s %s)", expression.X, expression.Operator, expression.Y)
 }

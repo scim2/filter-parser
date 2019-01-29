@@ -5,10 +5,10 @@ type Token int
 const (
 	UNKNOWN Token = iota
 
-	WS   // whitespace (i.e. " ")
-	ID   // identifier (i.e. "userName")
-	EOF  // end-of-file
-	V    // value (i.e. "john")
+	WHITESPACE  // whitespace (i.e. " ")
+	IDENTIFIER  // identifier (i.e. "userName")
+	EOF         // end-of-file
+	VALUE       // value (i.e. "john")
 
 	// Attribute Operators
 	EQ  // equal
@@ -28,20 +28,20 @@ const (
 	NOT  // "not" function
 
 	// Grouping Operators
-	LPAR  // left parenthesis
-	RPAR  // right parenthesis
-	LBRA  // left bracket
-	RBRA  // right bracket
+	LeftParenthesis   // left parenthesis
+	RightParenthesis  // right parenthesis
+	LeftBracket       // left bracket
+	RightBracket      // right bracket
 )
 
 // string representation of the tokens.
 var tokens = [...]string{
 	UNKNOWN: "unknown",
 
-	WS:  " ",
-	ID:  "id",
-	EOF: "",
-	V:   "value",
+	WHITESPACE: " ",
+	IDENTIFIER: "id",
+	EOF:        "",
+	VALUE:      "value",
 
 	EQ: "equal",
 	NE: "not equal",
@@ -58,10 +58,10 @@ var tokens = [...]string{
 	OR:  "or",
 	NOT: "not",
 
-	LPAR: "(",
-	RPAR: ")",
-	LBRA: "[",
-	RBRA: "]",
+	LeftParenthesis:  "(",
+	RightParenthesis: ")",
+	LeftBracket:      "[",
+	RightBracket:     "]",
 }
 
 // IsOperator returns whether the token is an operator.
