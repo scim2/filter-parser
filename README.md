@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/di-wu/scim-filter-parser)](https://goreportcard.com/report/github.com/di-wu/scim-filter-parser)
 # Query Filter Parser for SCIM v2.0
 links: [[scim](http://www.simplecloud.info/#Specification)] [[filtering](https://tools.ietf.org/html/rfc7644#section-3.4.2.2)] \
 other: [[pratt parser](https://en.wikipedia.org/wiki/Pratt_parser)]
