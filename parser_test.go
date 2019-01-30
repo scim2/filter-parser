@@ -1,4 +1,4 @@
-package scim_filter_parser
+package scim
 
 import (
 	"reflect"
@@ -78,7 +78,6 @@ func TestParser_AttributeOperators(t *testing.T) {
 				Operator: PR,
 			},
 		},
-
 
 		// empty value
 		{
@@ -300,9 +299,9 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 			s: `emails co "example.org" and (emails.type eq "work" and emails.value co "example.org")`,
 			expr: BinaryExpression{
 				X: ValueExpression{
-					Name: "emails",
-					Operator:CO,
-					Value: "example.org",
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
 				},
 				Operator: AND,
 				Y: BinaryExpression{
@@ -343,9 +342,9 @@ func TestParser_GroupingOperators_Brackets(t *testing.T) {
 			s: `emails co "example.org" and emails[type eq "work" and value co "example.org"]`,
 			expr: BinaryExpression{
 				X: ValueExpression{
-					Name: "emails",
-					Operator:CO,
-					Value: "example.org",
+					Name:     "emails",
+					Operator: CO,
+					Value:    "example.org",
 				},
 				Operator: AND,
 				Y: BinaryExpression{

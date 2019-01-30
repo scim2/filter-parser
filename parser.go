@@ -1,4 +1,4 @@
-package scim_filter_parser
+package scim
 
 import (
 	"fmt"
@@ -39,48 +39,25 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	switch token {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
-	case LeftParenthesis:
+	case LeftParenthesis, LeftBracket:
 		expression, err := parser.expression(LowestPrecedence)
 		if err != nil {
 			return nil, err
 		}
 		parenthesis, parenthesisLiteral := parser.scanIgnoreWhitespace()
-		if parenthesis != RightParenthesis {
-			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
+		if parenthesis != RightParenthesis && parenthesis != RightBracket {
+			return nil, fmt.Errorf("found %q, expected '[' or '('", parenthesisLiteral)
 		}
 
-		left = expression
-	case LeftBracket:
-		expression, err := parser.expression(LowestPrecedence)
-		if err != nil {
-			return nil, err
+		if token == LeftBracket {
+			parser.prefix = ""
 		}
-		parenthesis, parenthesisLiteral := parser.scanIgnoreWhitespace()
-		if parenthesis != RightBracket {
-			return nil, fmt.Errorf("found %q, expected right parenthesis", parenthesisLiteral)
-		}
-
-		parser.prefix = ""
 		left = expression
 	case IDENTIFIER:
-		operator, operatorLiteral := parser.scanIgnoreWhitespace()
-		if !operator.IsOperator() {
-			return nil, fmt.Errorf("found %q, expected operator", operatorLiteral)
-		}
-
-		value, valueLiteral := parser.scanIgnoreWhitespace()
-		if value != VALUE && valueLiteral != "" {
-			return nil, fmt.Errorf("found %q, expected value", token)
-		}
-
-		if parser.prefix != "" {
-			literal = parser.prefix + "." + literal
-		}
-
-		left = ValueExpression{
-			Name:     literal,
-			Operator: operator,
-			Value:    valueLiteral,
+		var err error
+		left, err = parser.parseValueExpression(token, literal)
+		if err != nil {
+			return nil, err
 		}
 	case NOT:
 		expression, err := parser.expression(HighestPrecedence)
@@ -109,6 +86,29 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	}
 
 	return left, nil
+}
+
+// parseValueExpression returns a value expression with the remaining operator and value of preceding identifier.
+func (parser *Parser) parseValueExpression(token Token, literal string) (ValueExpression, error) {
+	operator, operatorLiteral := parser.scanIgnoreWhitespace()
+	if !operator.IsOperator() {
+		return ValueExpression{}, fmt.Errorf("found %q, expected operator", operatorLiteral)
+	}
+
+	value, valueLiteral := parser.scanIgnoreWhitespace()
+	if value != VALUE && valueLiteral != "" {
+		return ValueExpression{}, fmt.Errorf("found %q, expected value", token)
+	}
+
+	if parser.prefix != "" {
+		literal = parser.prefix + "." + literal
+	}
+
+	return ValueExpression{
+		Name:     literal,
+		Operator: operator,
+		Value:    valueLiteral,
+	}, nil
 }
 
 // scan returns the next token in the scanner.

@@ -1,4 +1,4 @@
-package scim_filter_parser
+package scim
 
 import (
 	"bufio"
@@ -101,9 +101,12 @@ func (scanner *Scanner) scanIdentifiers() (Token, string) {
 		}
 	}
 
-	// buf to lower case
-	lower := strings.ToLower(buf.String())
+	return checkIdentifier(buf.String())
+}
 
+// checkIdentifier checks whether given literal is a token or identifier.
+func checkIdentifier(literal string) (Token, string) {
+	lower := strings.ToLower(literal)
 	switch lower {
 	case "eq":
 		return EQ, lower

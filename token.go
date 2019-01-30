@@ -1,37 +1,57 @@
-package scim_filter_parser
+package scim
 
+// Token is an int type representing tokens.
 type Token int
 
 const (
+	// UNKNOWN is an unknown token
 	UNKNOWN Token = iota
 
-	WHITESPACE  // whitespace (i.e. " ")
-	IDENTIFIER  // identifier (i.e. "userName")
-	EOF         // end-of-file
-	VALUE       // value (i.e. "john")
+	// WHITESPACE is a whitespace (i.e. " ")
+	WHITESPACE
+	// IDENTIFIER is an identifier (i.e. "userName")
+	IDENTIFIER
+	// EOF represents an end-of-file
+	EOF
+	// VALUE is a value (i.e. "john")
+	VALUE
 
-	// Attribute Operators
-	EQ  // equal
-	NE  // not equal
-	CO  // contains
-	SW  // starts with
-	EW  // ends with
-	PR  // present (has value)
-	GT  // greater than
-	GE  // greater than or equal to
-	LT  // less than
-	LE  // less than or equal to
+	// EQ = equals
+	EQ
+	// NE = not equal
+	NE
+	// CO = contains
+	CO
+	// SW = starts with
+	SW
+	// EW = ends with
+	EW
+	// PR = present (has value)
+	PR
+	// GT = greater than
+	GT
+	// GE = greater than or equal to
+	GE
+	// LT = less than
+	LT
+	// LE = less than or equal to
+	LE
 
-	// Logical Operators
-	AND  // logical "and
-	OR   // logical "or"
-	NOT  // "not" function
+	// AND = logical "and"
+	AND
+	// OR = logical "or"
+	OR
+	// NOT = "not" function
+	NOT
 
-	// Grouping Operators
-	LeftParenthesis   // left parenthesis
-	RightParenthesis  // right parenthesis
-	LeftBracket       // left bracket
-	RightBracket      // right bracket
+	// LeftParenthesis = "("
+	LeftParenthesis
+	// RightParenthesis = ")"
+	RightParenthesis
+	// LeftBracket = "["
+	LeftBracket
+	// RightBracket = "]"
+	RightBracket
 )
 
 // string representation of the tokens.
@@ -83,8 +103,10 @@ func (token Token) IsAssociative() bool {
 }
 
 const (
+	// HighestPrecedence is the highest precedence of a token (highest integer)
 	HighestPrecedence = 2
-	LowestPrecedence  = 0
+	// LowestPrecedence is the lowest precedence of a token (lowest integer)
+	LowestPrecedence = 0
 )
 
 // Precedence returns the precedence value of the token.

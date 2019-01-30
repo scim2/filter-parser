@@ -1,4 +1,4 @@
-package scim_filter_parser
+package scim
 
 import (
 	"strings"
