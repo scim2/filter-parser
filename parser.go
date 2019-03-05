@@ -55,7 +55,7 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 		left = expression
 	case IDENTIFIER:
 		var err error
-		left, err = parser.parseValueExpression(token, literal)
+		left, err = parser.parseAttributeExpression(token, literal)
 		if err != nil {
 			return nil, err
 		}
@@ -65,8 +65,8 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 			return nil, err
 		}
 		left = UnaryExpression{
-			X:        expression,
-			Operator: NOT,
+			X:               expression,
+			CompareOperator: NOT,
 		}
 	}
 
@@ -78,9 +78,9 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 				return nil, err
 			}
 			left = BinaryExpression{
-				X:        left,
-				Operator: token,
-				Y:        expression,
+				X:               left,
+				CompareOperator: token,
+				Y:               expression,
 			}
 		}
 	}
@@ -88,26 +88,26 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	return left, nil
 }
 
-// parseValueExpression returns a value expression with the remaining operator and value of preceding identifier.
-func (parser *Parser) parseValueExpression(token Token, literal string) (ValueExpression, error) {
+// parseAttributeExpression returns a value expression with the remaining operator and value of preceding identifier.
+func (parser *Parser) parseAttributeExpression(token Token, literal string) (AttributeExpression, error) {
 	operator, operatorLiteral := parser.scanIgnoreWhitespace()
 	if !operator.IsOperator() {
-		return ValueExpression{}, fmt.Errorf("found %q, expected operator", operatorLiteral)
+		return AttributeExpression{}, fmt.Errorf("found %q, expected operator", operatorLiteral)
 	}
 
 	value, valueLiteral := parser.scanIgnoreWhitespace()
 	if value != VALUE && valueLiteral != "" {
-		return ValueExpression{}, fmt.Errorf("found %q, expected value", token)
+		return AttributeExpression{}, fmt.Errorf("found %q, expected value", token)
 	}
 
 	if parser.prefix != "" {
 		literal = parser.prefix + "." + literal
 	}
 
-	return ValueExpression{
-		Name:     literal,
-		Operator: operator,
-		Value:    valueLiteral,
+	return AttributeExpression{
+		AttributePath:   literal,
+		CompareOperator: operator,
+		CompareValue:    valueLiteral,
 	}, nil
 }
 

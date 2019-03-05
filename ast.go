@@ -5,37 +5,37 @@ import "fmt"
 // Expression is a type to assign to implemented expressions.
 type Expression interface{}
 
-// ValueExpression is an Expression with a name, operator and value.
-type ValueExpression struct {
+// AttributeExpression is an Expression with a name, operator and value.
+type AttributeExpression struct {
 	Expression
-	Name     string
-	Operator Token
-	Value    string
+	AttributePath   string
+	CompareOperator Token
+	CompareValue    string
 }
 
 // UnaryExpression is an expression with a token bound to a (child) expression X.
 type UnaryExpression struct {
 	Expression
-	Operator Token
-	X        Expression
+	CompareOperator Token
+	X               Expression
 }
 
 // BinaryExpression is an expression with a token bound to two (child) expressions X and Y.
 type BinaryExpression struct {
 	Expression
-	X        Expression
-	Operator Token
-	Y        Expression
+	X               Expression
+	CompareOperator Token
+	Y               Expression
 }
 
-func (expression ValueExpression) String() string {
-	return fmt.Sprintf("'%s %s %s'", expression.Name, expression.Operator, expression.Value)
+func (expression AttributeExpression) String() string {
+	return fmt.Sprintf("'%s %s %s'", expression.AttributePath, expression.CompareOperator, expression.CompareValue)
 }
 
 func (expression UnaryExpression) String() string {
-	return fmt.Sprintf("%s %s", expression.Operator, expression.X)
+	return fmt.Sprintf("%s %s", expression.CompareOperator, expression.X)
 }
 
 func (expression BinaryExpression) String() string {
-	return fmt.Sprintf("(%s %s %s)", expression.X, expression.Operator, expression.Y)
+	return fmt.Sprintf("(%s %s %s)", expression.X, expression.CompareOperator, expression.Y)
 }

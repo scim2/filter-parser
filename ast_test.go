@@ -7,26 +7,26 @@ import (
 
 func TestAST(t *testing.T) {
 	expression := BinaryExpression{
-		X: ValueExpression{
-			Name:     "emails",
-			Operator: CO,
-			Value:    ".com",
+		X: AttributeExpression{
+			AttributePath:   "emails",
+			CompareOperator: CO,
+			CompareValue:    ".com",
 		},
-		Operator: OR,
+		CompareOperator: OR,
 		Y: BinaryExpression{
-			X: ValueExpression{
-				Name:     "emails",
-				Operator: CO,
-				Value:    ".org",
+			X: AttributeExpression{
+				AttributePath:   "emails",
+				CompareOperator: CO,
+				CompareValue:    ".org",
 			},
-			Operator: AND,
+			CompareOperator: AND,
 			Y: UnaryExpression{
-				X: ValueExpression{
-					Name:     "emails",
-					Operator: CO,
-					Value:    ".be",
+				X: AttributeExpression{
+					AttributePath:   "emails",
+					CompareOperator: CO,
+					CompareValue:    ".be",
 				},
-				Operator: NOT,
+				CompareOperator: NOT,
 			},
 		},
 	}
