@@ -79,15 +79,6 @@ func TestParser_AttributeOperators(t *testing.T) {
 			},
 		},
 
-		// empty value
-		{
-			s: `Username eq`,
-			expr: AttributeExpression{
-				AttributePath:   "username",
-				CompareOperator: EQ,
-			},
-		},
-
 		// invalid operator
 		{
 			s:   `error x "value"`,
@@ -96,6 +87,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		if test.err == "" && !Filter(test.s) {
+			t.Errorf("invalid filter: %s", test.s)
+		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
 			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
@@ -212,6 +206,9 @@ func TestParser_LogicalOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		if test.err == "" && !Filter(test.s) {
+			t.Errorf("invalid filter: %s", test.s)
+		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
 			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
@@ -322,6 +319,9 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		if test.err == "" && !Filter(test.s) {
+			t.Errorf("invalid filter: %s", test.s)
+		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
 			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
@@ -397,6 +397,9 @@ func TestParser_GroupingOperators_Brackets(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		if test.err == "" && !Filter(test.s) {
+			t.Errorf("invalid filter: %s", test.s)
+		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
 		if !reflect.DeepEqual(test.err, errToString(err)) {
 			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)

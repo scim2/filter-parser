@@ -90,8 +90,8 @@ func TestSubAttr(t *testing.T) {
 
 func TestAttrPath(t *testing.T) {
 	for _, s := range []string{
-		"urn:ietf:params:scim:schemas:core:2.0:User",
-		"urn:ietf:params:scim:schemas:core:2.0:name.givenName",
+		"urn:ietf:params:scim:schemas:core:2.0:User:name",
+		"urn:ietf:params:scim:schemas:core:2.0:User:name.givenName",
 		"id",
 		"name.givenName",
 	} {
@@ -101,7 +101,7 @@ func TestAttrPath(t *testing.T) {
 	}
 
 	for _, s := range []string{
-		"urn:ietf:params:scim:schemas:core:2.0",
+		"urn:ietf:params:scim:schemas:core:2.0:User",
 		"name.given.name",
 	} {
 		if attrPath(s) {
@@ -230,9 +230,9 @@ func TestFilter(t *testing.T) {
 
 	for _, s := range []string{
 		"name.givenName pr ", "name.givenName eq givenName",
-		"not name.givenName pr and name.givenName eq \"givenName\"",
+		"not  name.givenName pr and name.givenName eq \"givenName\"",
 		"emails[type eq maybe]",
-		"not name.givenName pr",
+		"not  name.givenName pr",
 	} {
 		if Filter(s) {
 			ErrorString(t, false, "filter", s)
@@ -273,7 +273,7 @@ func TestValueFilter(t *testing.T) {
 
 	for _, s := range []string{
 		"name.givenName pr ", "name.givenName eq givenName",
-		"not name.givenName pr and name.givenName eq \"givenName\"",
+		"not  name.givenName pr and name.givenName eq \"givenName\"",
 		"not not(name.givenName pr) and name.givenName eq \"givenName\")",
 	} {
 		if valueFilter(s) {

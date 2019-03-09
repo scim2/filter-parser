@@ -2,11 +2,12 @@ package scim
 
 import (
 	"encoding/json"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-var URI = "urn:ietf:params:scim:schemas:core:2.0"
+var URI = "urn:ietf:params:scim:schemas:core:2.0:User"
 
 // ALPHA = A–Z, a–z
 func alpha(r rune) bool {
@@ -70,7 +71,7 @@ func attrPath(s string) bool {
 
 // compValue = false / null / true / number / string
 func compareOp(s string) bool {
-	switch s {
+	switch strings.ToLower(s) {
 	case "eq", "ne", "co", "sw", "ew", "gt", "lt", "ge", "le":
 		return true
 	default:
@@ -122,19 +123,20 @@ func space(s string) bool {
 func attrExp(s string) bool {
 	split := strings.Split(s, " ")
 	switch len(split) {
+	case 0, 1:
+		return false
 	case 2:
 		return attrPath(split[0]) && split[1] == "pr"
-	case 3:
-		return attrPath(split[0]) && compareOp(split[1]) && compValue(split[2])
 	default:
-		return false
+		return attrPath(split[0]) && compareOp(split[1]) && compValue(strings.Join(split[2:], " "))
 	}
 }
 
 // FILTER = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
 func Filter(s string) bool {
 	if strings.HasPrefix(s, "not") {
-		return Filter(s[3:])
+		return Filter(strings.TrimPrefix(s[3:], " "))
+		//return Filter(strings.TrimLeft(s[3:], " "))
 	}
 	if strings.HasPrefix(s, "(") && strings.HasSuffix(s, ")") {
 		return Filter(s[1 : len(s)-1])
@@ -170,21 +172,33 @@ func valueFilter(s string) bool {
 
 // logExp = FILTER SP ("and" / "or") SP FILTER
 func logExp(s string) bool {
-	split := strings.Split(s, " and ")
-	var double []string
-	for _, s := range split {
-		for _, elem := range strings.Split(s, " or ") {
-			double = append(double, elem)
-		}
+	// regex for (...) and [...]
+	brackets := regexp.MustCompile(`(\(.*?\))|(\[.*?\])`)
+	inside := brackets.FindAllString(s,  -1)
+
+	// replace all strings inside brackets w/ "%"
+	for _, v := range inside {
+		s = strings.Replace(s, v, "%", 1)
 	}
-	if len(double) <= 1 {
+
+	// split on first and/or not inside ()/[]
+	r := regexp.MustCompile(` and | or `)
+	splits := r.Split(s, 2)
+
+	if len(splits) != 2 {
 		return false
 	}
 
-	for _, s := range double {
-		if !Filter(s) {
-			return false
+	// repopulate string
+	idx := 0
+	for i, v := range splits {
+		count := strings.Count(v, "%")
+		for count > 0 {
+			splits[i] = strings.Replace(v, "%", inside[idx], 1)
+			count = count - 1
+			idx = idx + 1
 		}
 	}
-	return true
+
+	return Filter(splits[0]) && Filter(splits[1])
 }
