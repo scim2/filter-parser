@@ -103,10 +103,10 @@ func (token Token) IsAssociative() bool {
 }
 
 const (
-	// HighestPrecedence is the highest precedence of a token (highest integer)
-	HighestPrecedence = 2
-	// LowestPrecedence is the lowest precedence of a token (lowest integer)
-	LowestPrecedence = 0
+	// highestPrecedence is the highest precedence of a token (highest integer)
+	highestPrecedence = 2
+	// lowestPrecedence is the lowest precedence of a token (lowest integer)
+	lowestPrecedence = 0
 )
 
 // Precedence returns the precedence value of the token.

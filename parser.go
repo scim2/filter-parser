@@ -23,7 +23,7 @@ func NewParser(r io.Reader) *Parser {
 
 // Parse returns an abstract syntax tree of the string in the scanner.
 func (parser *Parser) Parse() (Expression, error) {
-	return parser.expression(LowestPrecedence)
+	return parser.expression(lowestPrecedence)
 }
 
 // expression is the implementation of the Pratt parser.
@@ -40,7 +40,7 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
 	case LeftParenthesis, LeftBracket:
-		expression, err := parser.expression(LowestPrecedence)
+		expression, err := parser.expression(lowestPrecedence)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +60,7 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 			return nil, err
 		}
 	case NOT:
-		expression, err := parser.expression(HighestPrecedence)
+		expression, err := parser.expression(highestPrecedence)
 		if err != nil {
 			return nil, err
 		}

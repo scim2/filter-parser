@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-var URI = "urn:ietf:params:scim:schemas:core:2.0:User"
-
 // ALPHA = A–Z, a–z
 func alpha(r rune) bool {
 	i := int32(r)
@@ -26,7 +24,7 @@ func nameChar(r rune) bool {
 	return r == '-' || r == '_' || digit(r) || alpha(r)
 }
 
-// ATTRNAME  = ALPHA *(nameChar)
+// AttrName  = ALPHA *(nameChar)
 func AttrName(s string) bool {
 	for idx, r := range s {
 		if idx == 0 && !alpha(r) {
@@ -50,8 +48,12 @@ func subAttr(s string) bool {
 
 // attrPath  = [URI ":"] ATTRNAME *1subAttr
 func attrPath(s string) bool {
-	s = strings.TrimPrefix(s, URI)
-	s = strings.TrimPrefix(s, ":")
+	split := strings.Split(s, ":")
+	if len(split) > 1 && len(split) < 9 {
+		return false
+	}
+
+	s = split[len(split)-1]
 	if len(s) < 1 {
 		return false
 	}
@@ -132,7 +134,7 @@ func attrExp(s string) bool {
 	}
 }
 
-// FILTER = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
+// Filter = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
 func Filter(s string) bool {
 	if strings.HasPrefix(s, "not") {
 		return Filter(strings.TrimPrefix(s[3:], " "))
@@ -174,7 +176,7 @@ func valueFilter(s string) bool {
 func logExp(s string) bool {
 	// regex for (...) and [...]
 	brackets := regexp.MustCompile(`(\(.*?\))|(\[.*?\])`)
-	inside := brackets.FindAllString(s,  -1)
+	inside := brackets.FindAllString(s, -1)
 
 	// replace all strings inside brackets w/ "%"
 	for _, v := range inside {
