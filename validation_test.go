@@ -282,6 +282,16 @@ func TestValueFilter(t *testing.T) {
 	}
 }
 
+func TestValueLogExp(t *testing.T) {
+	for _, s := range []string{
+		"name.givenName eq \"givenName\" and name.givenName eq \"givenName\"",
+	} {
+		if !valueLogExp(s) {
+			ErrorString(t, true, "value filter", s)
+		}
+	}
+}
+
 func TestLogExp(t *testing.T) {
 	for _, s := range []string{
 		"name.givenName pr and name.givenName eq \"givenName\"",
@@ -293,6 +303,7 @@ func TestLogExp(t *testing.T) {
 
 	for _, s := range []string{
 		"name.givenName pr andor name.givenName eq givenName",
+		"name[givenName eq \"givenName\" and name[familyName eq \"familyName\"]]",
 	} {
 		if logExp(s) {
 			ErrorString(t, false, "logical expression", s)

@@ -161,7 +161,7 @@ func valuePath(s string) bool {
 	}
 }
 
-// valFilter = attrExp / logExp / *1"not" "(" valFilter ")"
+// valFilter = attrExp / valLogExp / *1"not" "(" valFilter ")"
 func valueFilter(s string) bool {
 	if strings.HasPrefix(s, "not") && strings.HasSuffix(s, ")") {
 		return valueFilter(s[3:])
@@ -169,11 +169,28 @@ func valueFilter(s string) bool {
 	if strings.HasPrefix(s, "(") && strings.HasSuffix(s, ")") {
 		return valueFilter(s[1 : len(s)-1])
 	}
-	return attrExp(s) || logExp(s)
+	return attrExp(s) || valueLogExp(s) || logExp(s)
+}
+
+// valLogExp = attrExp SP ("and" / "or") SP attrExp
+func valueLogExp(s string) bool {
+	first, last := splitOnLog(s)
+	if first == "" || last == "" {
+		return false
+	}
+	return attrExp(first) && attrExp(last)
 }
 
 // logExp = FILTER SP ("and" / "or") SP FILTER
 func logExp(s string) bool {
+	first, last := splitOnLog(s)
+	if first == "" || last == "" {
+		return false
+	}
+	return Filter(first) && Filter(last)
+}
+
+func splitOnLog(s string) (string, string) {
 	// regex for (...) and [...]
 	brackets := regexp.MustCompile(`(\(.*?\))|(\[.*?\])`)
 	inside := brackets.FindAllString(s, -1)
@@ -188,7 +205,7 @@ func logExp(s string) bool {
 	splits := r.Split(s, 2)
 
 	if len(splits) != 2 {
-		return false
+		return "", ""
 	}
 
 	// repopulate string
@@ -202,5 +219,5 @@ func logExp(s string) bool {
 		}
 	}
 
-	return Filter(splits[0]) && Filter(splits[1])
+	return splits[0], splits[1]
 }

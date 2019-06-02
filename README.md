@@ -35,7 +35,7 @@ Expressions MAY be grouped together using round brackets "(" and ")".
 
 Filters MUST be evaluated using the following order of operations, in order of precedence:
 
-   1.  Grouping operators
-   2.  Logical operators - where "not" takes precedence over "and",
-       which takes precedence over "or"
-   3.  Attribute operators
+    1.  Grouping operators
+    2.  Attribute operators
+    3.  Logical operators - where "not" takes precedence over "and",
+        which takes precedence over "or"
