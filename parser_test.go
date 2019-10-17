@@ -16,7 +16,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `userName Eq "john"`,
 			expr: AttributeExpression{
-				AttributePath:   "username",
+				AttributePath: AttributePath{
+					AttributeName: "username",
+				},
 				CompareOperator: EQ,
 				CompareValue:    "john",
 			},
@@ -24,7 +26,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `userName Eq "john"`,
 			expr: AttributeExpression{
-				AttributePath:   "username",
+				AttributePath: AttributePath{
+					AttributeName: "username",
+				},
 				CompareOperator: EQ,
 				CompareValue:    "john",
 			},
@@ -32,7 +36,10 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `name.formatted eq "john doe"`,
 			expr: AttributeExpression{
-				AttributePath:   "name.formatted",
+				AttributePath: AttributePath{
+					AttributeName: "name",
+					SubAttribute:  "formatted",
+				},
 				CompareOperator: EQ,
 				CompareValue:    "john doe",
 			},
@@ -40,9 +47,11 @@ func TestParser_AttributeOperators(t *testing.T) {
 
 		// other operators
 		{
-			s: `username ne "john"`,
+			s: `userName ne "john"`,
 			expr: AttributeExpression{
-				AttributePath:   "username",
+				AttributePath: AttributePath{
+					AttributeName: "username",
+				},
 				CompareOperator: NE,
 				CompareValue:    "john",
 			},
@@ -50,7 +59,10 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `name.familyName co "doe"`,
 			expr: AttributeExpression{
-				AttributePath:   "name.familyname",
+				AttributePath: AttributePath{
+					AttributeName: "name",
+					SubAttribute:  "familyname",
+				},
 				CompareOperator: CO,
 				CompareValue:    "doe",
 			},
@@ -58,7 +70,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName sw "j"`,
 			expr: AttributeExpression{
-				AttributePath:   "username",
+				AttributePath: AttributePath{
+					AttributeName: "username",
+				},
 				CompareOperator: SW,
 				CompareValue:    "j",
 			},
@@ -66,7 +80,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `username ew "n"`,
 			expr: AttributeExpression{
-				AttributePath:   "username",
+				AttributePath: AttributePath{
+					AttributeName: "username",
+				},
 				CompareOperator: EW,
 				CompareValue:    "n",
 			},
@@ -74,7 +90,9 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s: `title pr`,
 			expr: AttributeExpression{
-				AttributePath:   `title`,
+				AttributePath: AttributePath{
+					AttributeName: "title",
+				},
 				CompareOperator: PR,
 			},
 		},
@@ -83,6 +101,32 @@ func TestParser_AttributeOperators(t *testing.T) {
 		{
 			s:   `error x "value"`,
 			err: `found "x", expected operator`,
+		},
+	}
+
+	for i, test := range tests {
+		if test.err == "" && !Filter(test.s) {
+			t.Errorf("invalid filter: %s", test.s)
+		}
+		expr, err := NewParser(strings.NewReader(test.s)).Parse()
+		if !reflect.DeepEqual(test.err, errToString(err)) {
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
+		}
+	}
+}
+
+func TestParser_SubAttributes(t *testing.T) {
+	var tests = []struct {
+		s    string
+		expr Expression
+		err  string
+	}{
+		// invalid operator
+		{
+			s:   `emails.x.y pr`,
+			err: `found emails.x.y, no multiple sub attributes allowed`,
 		},
 	}
 
@@ -111,7 +155,9 @@ func TestParser_LogicalOperators(t *testing.T) {
 			expr: UnaryExpression{
 				CompareOperator: NOT,
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.com",
 				},
@@ -123,13 +169,17 @@ func TestParser_LogicalOperators(t *testing.T) {
 			s: `emails co "example.com" and emails co "example.org"`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.com",
 				},
 				CompareOperator: AND,
 				Y: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
@@ -141,13 +191,17 @@ func TestParser_LogicalOperators(t *testing.T) {
 			s: `emails co "example.com" or emails co "example.org"`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.com",
 				},
 				CompareOperator: OR,
 				Y: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
@@ -160,20 +214,26 @@ func TestParser_LogicalOperators(t *testing.T) {
 			expr: BinaryExpression{
 				X: BinaryExpression{
 					X: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.com",
 					},
 					CompareOperator: AND,
 					Y: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.org",
 					},
 				},
 				CompareOperator: OR,
 				Y: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.be",
 				},
@@ -183,20 +243,26 @@ func TestParser_LogicalOperators(t *testing.T) {
 			s: `emails co "example.be" or emails co "example.com" and emails co "example.org"`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.be",
 				},
 				CompareOperator: OR,
 				Y: BinaryExpression{
 					X: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.com",
 					},
 					CompareOperator: AND,
 					Y: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.org",
 					},
@@ -230,20 +296,26 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 			expr: BinaryExpression{
 				X: BinaryExpression{
 					X: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.be",
 					},
 					CompareOperator: OR,
 					Y: AttributeExpression{
-						AttributePath:   "emails",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.com",
 					},
 				},
 				CompareOperator: AND,
 				Y: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
@@ -253,7 +325,9 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 			s: `emails co "example.org" and not (emails co "example.be" or emails co "example.com")`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
@@ -261,13 +335,17 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 				Y: UnaryExpression{
 					X: BinaryExpression{
 						X: AttributeExpression{
-							AttributePath:   "emails",
+							AttributePath: AttributePath{
+								AttributeName: "emails",
+							},
 							CompareOperator: CO,
 							CompareValue:    "example.be",
 						},
 						CompareOperator: OR,
 						Y: AttributeExpression{
-							AttributePath:   "emails",
+							AttributePath: AttributePath{
+								AttributeName: "emails",
+							},
 							CompareOperator: CO,
 							CompareValue:    "example.com",
 						},
@@ -280,13 +358,17 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 			s: `emails co "example.com" and (emails co "example.org")`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.com",
 				},
 				CompareOperator: AND,
 				Y: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
@@ -296,20 +378,28 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 			s: `emails co "example.org" and (emails.type eq "work" and emails.value co "example.org")`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
 				CompareOperator: AND,
 				Y: BinaryExpression{
 					X: AttributeExpression{
-						AttributePath:   "emails.type",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+							SubAttribute:  "type",
+						},
 						CompareOperator: EQ,
 						CompareValue:    "work",
 					},
 					CompareOperator: AND,
 					Y: AttributeExpression{
-						AttributePath:   "emails.value",
+						AttributePath: AttributePath{
+							AttributeName: "emails",
+							SubAttribute:  "value",
+						},
 						CompareOperator: CO,
 						CompareValue:    "example.org",
 					},
@@ -342,22 +432,31 @@ func TestParser_GroupingOperators_Brackets(t *testing.T) {
 			s: `emails co "example.org" and emails[type eq "work" and value co "example.org"]`,
 			expr: BinaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    "example.org",
 				},
 				CompareOperator: AND,
-				Y: BinaryExpression{
-					X: AttributeExpression{
-						AttributePath:   "emails.type",
-						CompareOperator: EQ,
-						CompareValue:    "work",
-					},
-					CompareOperator: AND,
-					Y: AttributeExpression{
-						AttributePath:   "emails.value",
-						CompareOperator: CO,
-						CompareValue:    "example.org",
+				Y: ValuePath{
+					AttributeName: "emails",
+					ValueExpression: BinaryExpression{
+						X: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "type",
+							},
+							CompareOperator: EQ,
+							CompareValue:    "work",
+						},
+						CompareOperator: AND,
+						Y: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "value",
+							},
+							CompareOperator: CO,
+							CompareValue:    "example.org",
+						},
 					},
 				},
 			},
@@ -365,31 +464,45 @@ func TestParser_GroupingOperators_Brackets(t *testing.T) {
 		{
 			s: `emails[type eq "work" and value co "example.org"] or emails[type eq "private" and value co "example.com"]`,
 			expr: BinaryExpression{
-				X: BinaryExpression{
-					X: AttributeExpression{
-						AttributePath:   "emails.type",
-						CompareOperator: EQ,
-						CompareValue:    "work",
-					},
-					CompareOperator: AND,
-					Y: AttributeExpression{
-						AttributePath:   "emails.value",
-						CompareOperator: CO,
-						CompareValue:    "example.org",
+				X: ValuePath{
+					AttributeName: "emails",
+					ValueExpression: BinaryExpression{
+						X: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "type",
+							},
+							CompareOperator: EQ,
+							CompareValue:    "work",
+						},
+						CompareOperator: AND,
+						Y: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "value",
+							},
+							CompareOperator: CO,
+							CompareValue:    "example.org",
+						},
 					},
 				},
 				CompareOperator: OR,
-				Y: BinaryExpression{
-					X: AttributeExpression{
-						AttributePath:   "emails.type",
-						CompareOperator: EQ,
-						CompareValue:    "private",
-					},
-					CompareOperator: AND,
-					Y: AttributeExpression{
-						AttributePath:   "emails.value",
-						CompareOperator: CO,
-						CompareValue:    "example.com",
+				Y: ValuePath{
+					AttributeName: "emails",
+					ValueExpression: BinaryExpression{
+						X: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "type",
+							},
+							CompareOperator: EQ,
+							CompareValue:    "private",
+						},
+						CompareOperator: AND,
+						Y: AttributeExpression{
+							AttributePath: AttributePath{
+								AttributeName: "value",
+							},
+							CompareOperator: CO,
+							CompareValue:    "example.com",
+						},
 					},
 				},
 			},

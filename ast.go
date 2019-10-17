@@ -8,9 +8,20 @@ type Expression interface{}
 // AttributeExpression is an Expression with a name, operator and value.
 type AttributeExpression struct {
 	Expression
-	AttributePath   string
+	AttributePath   AttributePath
 	CompareOperator Token
 	CompareValue    string
+}
+
+type AttributePath struct {
+	AttributeName string
+	SubAttribute  string
+}
+
+type ValuePath struct {
+	Expression
+	AttributeName   string
+	ValueExpression Expression
 }
 
 // UnaryExpression is an expression with a token bound to a (child) expression X.
@@ -30,6 +41,17 @@ type BinaryExpression struct {
 
 func (expression AttributeExpression) String() string {
 	return fmt.Sprintf("'%s %s %s'", expression.AttributePath, expression.CompareOperator, expression.CompareValue)
+}
+
+func (attributePath AttributePath) String() string {
+	if attributePath.SubAttribute != "" {
+		return fmt.Sprintf("%s.%s", attributePath.AttributeName, attributePath.SubAttribute)
+	}
+	return attributePath.AttributeName
+}
+
+func (valuePath ValuePath) String() string {
+	return fmt.Sprintf("%s[%s]", valuePath.AttributeName, valuePath.ValueExpression)
 }
 
 func (expression UnaryExpression) String() string {

@@ -3,6 +3,7 @@ package filter
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 // Parser is a parser.
@@ -49,10 +50,14 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 			return nil, fmt.Errorf("found %q, expected '[' or '('", parenthesisLiteral)
 		}
 
-		if token == LeftBracket {
-			parser.prefix = ""
+		if parenthesis == RightBracket {
+			left = ValuePath{
+				AttributeName:   parser.prefix,
+				ValueExpression: expression,
+			}
+		} else {
+			left = expression
 		}
-		left = expression
 	case IDENTIFIER:
 		var err error
 		left, err = parser.parseAttributeExpression(token, literal)
@@ -100,12 +105,24 @@ func (parser *Parser) parseAttributeExpression(token Token, literal string) (Att
 		return AttributeExpression{}, fmt.Errorf("found %q, expected value", token)
 	}
 
-	if parser.prefix != "" {
-		literal = parser.prefix + "." + literal
+	if sub := strings.Split(literal, "."); len(sub) > 1 {
+		if len(sub) > 2 {
+			return AttributeExpression{}, fmt.Errorf("found %s, no multiple sub attributes allowed", literal)
+		}
+		return AttributeExpression{
+			AttributePath: AttributePath{
+				AttributeName: sub[0],
+				SubAttribute:  sub[1],
+			},
+			CompareOperator: operator,
+			CompareValue:    valueLiteral,
+		}, nil
 	}
 
 	return AttributeExpression{
-		AttributePath:   literal,
+		AttributePath: AttributePath{
+			AttributeName: literal,
+		},
 		CompareOperator: operator,
 		CompareValue:    valueLiteral,
 	}, nil

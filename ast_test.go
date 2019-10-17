@@ -8,21 +8,27 @@ import (
 func TestAST(t *testing.T) {
 	expression := BinaryExpression{
 		X: AttributeExpression{
-			AttributePath:   "emails",
+			AttributePath: AttributePath{
+				AttributeName: "emails",
+			},
 			CompareOperator: CO,
 			CompareValue:    ".com",
 		},
 		CompareOperator: OR,
 		Y: BinaryExpression{
 			X: AttributeExpression{
-				AttributePath:   "emails",
+				AttributePath: AttributePath{
+					AttributeName: "emails",
+				},
 				CompareOperator: CO,
 				CompareValue:    ".org",
 			},
 			CompareOperator: AND,
 			Y: UnaryExpression{
 				X: AttributeExpression{
-					AttributePath:   "emails",
+					AttributePath: AttributePath{
+						AttributeName: "emails",
+					},
 					CompareOperator: CO,
 					CompareValue:    ".be",
 				},
