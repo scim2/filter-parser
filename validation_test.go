@@ -1,4 +1,4 @@
-package scim
+package filter
 
 import (
 	"testing"
