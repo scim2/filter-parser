@@ -1,4 +1,4 @@
-package scim
+package filter
 
 // Token is an int type representing tokens.
 type Token int
