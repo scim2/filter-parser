@@ -205,13 +205,13 @@ func TestSP(t *testing.T) {
 func TestAttrExp(t *testing.T) {
 	for _, s := range []string{"name.givenName pr", "name.givenName eq \"givenName\""} {
 		if !attrExp(s) {
-			ErrorString(t, true, "attribute expression", s)
+			ErrorString(t, true, "attribute parse", s)
 		}
 	}
 
 	for _, s := range []string{"name.givenName pr ", "name.givenName eq givenName"} {
 		if attrExp(s) {
-			ErrorString(t, false, "attribute expression", s)
+			ErrorString(t, false, "attribute parse", s)
 		}
 	}
 }
@@ -223,7 +223,7 @@ func TestFilter(t *testing.T) {
 		"emails[type eq true]",
 		"not(name.givenName pr)",
 	} {
-		if !Filter(s) {
+		if !isFilter(s) {
 			ErrorString(t, true, "filter", s)
 		}
 	}
@@ -234,7 +234,7 @@ func TestFilter(t *testing.T) {
 		"emails[type eq maybe]",
 		"not  name.givenName pr",
 	} {
-		if Filter(s) {
+		if isFilter(s) {
 			ErrorString(t, false, "filter", s)
 		}
 	}
@@ -297,7 +297,7 @@ func TestLogExp(t *testing.T) {
 		"name.givenName pr and name.givenName eq \"givenName\"",
 	} {
 		if !logExp(s) {
-			ErrorString(t, true, "logical expression", s)
+			ErrorString(t, true, "logical parse", s)
 		}
 	}
 
@@ -306,7 +306,7 @@ func TestLogExp(t *testing.T) {
 		"name[givenName eq \"givenName\" and name[familyName eq \"familyName\"]]",
 	} {
 		if logExp(s) {
-			ErrorString(t, false, "logical expression", s)
+			ErrorString(t, false, "logical parse", s)
 		}
 	}
 }

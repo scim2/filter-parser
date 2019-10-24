@@ -22,14 +22,94 @@ func NewParser(r io.Reader) *Parser {
 	return &Parser{s: NewScanner(r)}
 }
 
-// Parse returns an abstract syntax tree of the string in the scanner.
-func (parser *Parser) Parse() (Expression, error) {
-	return parser.expression(lowestPrecedence)
+// ParsePath parses the "path" attribute value in the scanner.
+// RFC: https://tools.ietf.org/html/rfc7644#section-3.5.2
+func (parser *Parser) ParsePath() (Path, error) {
+	return parser.parsePath()
 }
 
-// expression is the implementation of the Pratt parser.
-func (parser *Parser) expression(precedence int) (Expression, error) {
-	var left interface{}
+func (parser *Parser) parsePath() (Path, error) {
+	token, literal := parser.scanIgnoreWhitespace()
+
+	if token != IDENTIFIER {
+		return Path{}, fmt.Errorf("found %q, expected identifier", literal)
+	}
+
+	if sub := strings.Split(literal, "."); len(sub) > 1 {
+		if len(sub) > 2 {
+			return Path{}, fmt.Errorf("found %q, no multiple sub attributes allowed", literal)
+		}
+		if sub[1] == "" {
+			return Path{}, fmt.Errorf("found %q, sub attribute can not be empty", literal)
+		}
+		if parser.peek() != EOF {
+			_, literal = parser.scanIgnoreWhitespace()
+			return Path{}, fmt.Errorf("found %q, expected eof", literal)
+		}
+		return Path{
+			AttributeName: sub[0],
+			SubAttribute:  sub[1],
+		}, nil
+	}
+	name := literal
+
+	token, literal = parser.scanIgnoreWhitespace()
+	if token != LeftBracket {
+		if token != EOF {
+			return Path{}, fmt.Errorf("found %q, expected eof", literal)
+		}
+		return Path{
+			AttributeName: name,
+		}, nil
+	}
+
+	expression, err := parser.parse(lowestPrecedence)
+	if err != nil {
+		return Path{}, err
+	}
+
+	token, literal = parser.scanIgnoreWhitespace()
+	if token != RightBracket {
+		return Path{}, fmt.Errorf("found %q, expected '['", literal)
+	}
+
+	token, literal = parser.scanIgnoreWhitespace()
+	if token == EOF {
+		return Path{
+			AttributeName:   name,
+			ValueExpression: expression,
+		}, nil
+	}
+	if token != Dot {
+		return Path{}, fmt.Errorf("found %q, expected '.' or eof", literal)
+	}
+
+	token, literal = parser.scanIgnoreWhitespace()
+	if token != IDENTIFIER {
+		return Path{}, fmt.Errorf("found %q, expected identifier", literal)
+	}
+	sub := literal
+
+	token, literal = parser.scanIgnoreWhitespace()
+	if token != EOF {
+		return Path{}, fmt.Errorf("found %q, expected eof", literal)
+	}
+
+	return Path{
+		AttributeName:   name,
+		ValueExpression: expression,
+		SubAttribute:    sub,
+	}, nil
+}
+
+// Parse returns an abstract syntax tree of the string in the scanner.
+// https://tools.ietf.org/html/rfc7644#section-3.4.2.2
+func (parser *Parser) Parse() (Expression, error) {
+	return parser.parse(lowestPrecedence)
+}
+
+func (parser *Parser) parse(precedence int) (Expression, error) {
+	var filter interface{}
 	token, literal := parser.scanIgnoreWhitespace()
 
 	if parser.peek() == LeftBracket {
@@ -41,7 +121,7 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	case UNKNOWN:
 		return nil, fmt.Errorf("unknown token: %q", literal)
 	case LeftParenthesis, LeftBracket:
-		expression, err := parser.expression(lowestPrecedence)
+		expression, err := parser.parse(lowestPrecedence)
 		if err != nil {
 			return nil, err
 		}
@@ -51,25 +131,25 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 		}
 
 		if parenthesis == RightBracket {
-			left = ValuePath{
+			filter = ValuePath{
 				AttributeName:   parser.prefix,
 				ValueExpression: expression,
 			}
 		} else {
-			left = expression
+			filter = expression
 		}
 	case IDENTIFIER:
 		var err error
-		left, err = parser.parseAttributeExpression(token, literal)
+		filter, err = parser.parseAttributeExpression(token, literal)
 		if err != nil {
 			return nil, err
 		}
 	case NOT:
-		expression, err := parser.expression(highestPrecedence)
+		expression, err := parser.parse(highestPrecedence)
 		if err != nil {
 			return nil, err
 		}
-		left = UnaryExpression{
+		filter = UnaryExpression{
 			X:               expression,
 			CompareOperator: NOT,
 		}
@@ -78,22 +158,22 @@ func (parser *Parser) expression(precedence int) (Expression, error) {
 	for precedence < parser.peek().Precedence() {
 		token, _ := parser.scanIgnoreWhitespace()
 		if token.IsAssociative() {
-			expression, err := parser.expression(token.Precedence())
+			expression, err := parser.parse(token.Precedence())
 			if err != nil {
 				return nil, err
 			}
-			left = BinaryExpression{
-				X:               left,
+			filter = BinaryExpression{
+				X:               filter,
 				CompareOperator: token,
 				Y:               expression,
 			}
 		}
 	}
 
-	return left, nil
+	return filter, nil
 }
 
-// parseAttributeExpression returns a value expression with the remaining operator and value of preceding identifier.
+// parseAttributeExpression returns a value parse with the remaining operator and value of preceding identifier.
 func (parser *Parser) parseAttributeExpression(token Token, literal string) (AttributeExpression, error) {
 	operator, operatorLiteral := parser.scanIgnoreWhitespace()
 	if !operator.IsOperator() {
@@ -107,7 +187,7 @@ func (parser *Parser) parseAttributeExpression(token Token, literal string) (Att
 
 	if sub := strings.Split(literal, "."); len(sub) > 1 {
 		if len(sub) > 2 {
-			return AttributeExpression{}, fmt.Errorf("found %s, no multiple sub attributes allowed", literal)
+			return AttributeExpression{}, fmt.Errorf("found %q, no multiple sub attributes allowed", literal)
 		}
 		return AttributeExpression{
 			AttributePath: AttributePath{

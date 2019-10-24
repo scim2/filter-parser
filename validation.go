@@ -134,14 +134,28 @@ func attrExp(s string) bool {
 	}
 }
 
-// Filter = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
-func Filter(s string) bool {
+// Path = attrPath / valuePath [subAttr]
+func isPath(s string) bool {
+	if attrPath(s) || valuePath(s) {
+		return true
+	}
+	idx := strings.LastIndex(s, ".")
+	if idx < 1 {
+		return false
+	}
+	first := s[:idx]
+	last := s[idx:]
+	return attrPath(first) && subAttr(last) || valuePath(first) && subAttr(last)
+}
+
+// isFilter = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
+func isFilter(s string) bool {
 	if strings.HasPrefix(s, "not") {
-		return Filter(strings.TrimPrefix(s[3:], " "))
-		//return Filter(strings.TrimLeft(s[3:], " "))
+		return isFilter(strings.TrimPrefix(s[3:], " "))
+		//return isFilter(strings.TrimLeft(s[3:], " "))
 	}
 	if strings.HasPrefix(s, "(") && strings.HasSuffix(s, ")") {
-		return Filter(s[1 : len(s)-1])
+		return isFilter(s[1 : len(s)-1])
 	}
 	return attrExp(s) || logExp(s) || valuePath(s)
 }
@@ -187,7 +201,7 @@ func logExp(s string) bool {
 	if first == "" || last == "" {
 		return false
 	}
-	return Filter(first) && Filter(last)
+	return isFilter(first) && isFilter(last)
 }
 
 func splitOnLog(s string) (string, string) {
