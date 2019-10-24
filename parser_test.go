@@ -6,7 +6,84 @@ import (
 	"testing"
 )
 
-func TestParser_AttributeOperators(t *testing.T) {
+func TestParsePath(t *testing.T) {
+	var tests = []struct {
+		s    string
+		expr Path
+		err  string
+	}{
+		{
+			s:   `.familyName`,
+			err: `found ".", expected identifier`,
+		},
+		{
+			s: `members`,
+			expr: Path{
+				AttributeName: "members",
+			},
+		},
+		{
+			s:   `members.`,
+			err: `found "members.", sub attribute can not be empty`,
+		},
+		{
+			s: `name.familyName`,
+			expr: Path{
+				AttributeName: "name",
+				SubAttribute:  "familyname",
+			},
+		},
+		{
+			s: `addresses[type eq "work"]`,
+			expr: Path{
+				AttributeName: "addresses",
+				ValueExpression: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "type",
+					},
+					CompareOperator: EQ,
+					CompareValue:    "work",
+				},
+			},
+		},
+		{
+			s:   `addresses[type eq "work"]x`,
+			err: `found "x", expected '.' or eof`,
+		},
+		{
+			s: `members[value eq "id"].displayName`,
+			expr: Path{
+				AttributeName: "members",
+				SubAttribute:  "displayname",
+				ValueExpression: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "value",
+					},
+					CompareOperator: EQ,
+					CompareValue:    "id",
+				},
+			},
+		},
+		{
+			s:   `members.displayName[value eq "id"]`,
+			err: `found "[", expected eof`,
+		},
+	}
+
+	for i, test := range tests {
+		if test.err == "" && !isPath(test.s) {
+			t.Errorf("invalid path: %s", test.s)
+		}
+		expr, err := NewParser(strings.NewReader(test.s)).ParsePath()
+		if !reflect.DeepEqual(test.err, errToString(err)) {
+			t.Errorf("%d. %q: wrong error:\n exp=%s\n got=%s\n\n", i, test.s, test.err, err)
+		} else if test.err == "" && !reflect.DeepEqual(test.expr, expr) {
+			t.Errorf("%d. %q: wrong expr:\n exp=%s\n got=%s\n\n", i, test.s, test.expr, expr)
+		}
+	}
+}
+
+func TestParse_AttributeOperators(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -105,7 +182,7 @@ func TestParser_AttributeOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if test.err == "" && !Filter(test.s) {
+		if test.err == "" && !isFilter(test.s) {
 			t.Errorf("invalid filter: %s", test.s)
 		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
@@ -117,7 +194,7 @@ func TestParser_AttributeOperators(t *testing.T) {
 	}
 }
 
-func TestParser_SubAttributes(t *testing.T) {
+func TestParse_SubAttributes(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -126,12 +203,12 @@ func TestParser_SubAttributes(t *testing.T) {
 		// invalid operator
 		{
 			s:   `emails.x.y pr`,
-			err: `found emails.x.y, no multiple sub attributes allowed`,
+			err: `found "emails.x.y", no multiple sub attributes allowed`,
 		},
 	}
 
 	for i, test := range tests {
-		if test.err == "" && !Filter(test.s) {
+		if test.err == "" && !isFilter(test.s) {
 			t.Errorf("invalid filter: %s", test.s)
 		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
@@ -143,7 +220,7 @@ func TestParser_SubAttributes(t *testing.T) {
 	}
 }
 
-func TestParser_LogicalOperators(t *testing.T) {
+func TestParse_LogicalOperators(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -272,7 +349,7 @@ func TestParser_LogicalOperators(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if test.err == "" && !Filter(test.s) {
+		if test.err == "" && !isFilter(test.s) {
 			t.Errorf("invalid filter: %s", test.s)
 		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
@@ -284,7 +361,7 @@ func TestParser_LogicalOperators(t *testing.T) {
 	}
 }
 
-func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
+func TestParse_GroupingOperators_Parenthesis(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -409,7 +486,7 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if test.err == "" && !Filter(test.s) {
+		if test.err == "" && !isFilter(test.s) {
 			t.Errorf("invalid filter: %s", test.s)
 		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()
@@ -421,7 +498,7 @@ func TestParser_GroupingOperators_Parenthesis(t *testing.T) {
 	}
 }
 
-func TestParser_GroupingOperators_Brackets(t *testing.T) {
+func TestParse_GroupingOperators_Brackets(t *testing.T) {
 	var tests = []struct {
 		s    string
 		expr Expression
@@ -510,7 +587,7 @@ func TestParser_GroupingOperators_Brackets(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if test.err == "" && !Filter(test.s) {
+		if test.err == "" && !isFilter(test.s) {
 			t.Errorf("invalid filter: %s", test.s)
 		}
 		expr, err := NewParser(strings.NewReader(test.s)).Parse()

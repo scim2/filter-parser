@@ -52,6 +52,9 @@ const (
 	LeftBracket
 	// RightBracket = "]"
 	RightBracket
+
+	// Dot = .
+	Dot
 )
 
 // string representation of the tokens.
@@ -82,6 +85,8 @@ var tokens = [...]string{
 	RightParenthesis: ")",
 	LeftBracket:      "[",
 	RightBracket:     "]",
+
+	Dot: ".",
 }
 
 // IsOperator returns whether the token is an operator.
@@ -98,8 +103,9 @@ func (token Token) IsAssociative() bool {
 	switch token {
 	case AND, OR:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 const (
@@ -116,8 +122,9 @@ func (token Token) Precedence() int {
 		return 2
 	case OR:
 		return 1
+	default:
+		return 0
 	}
-	return 0
 }
 
 func (token Token) String() string {

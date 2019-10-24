@@ -2,6 +2,12 @@ package filter
 
 import "fmt"
 
+type Path struct {
+	AttributeName   string
+	SubAttribute    string
+	ValueExpression Expression
+}
+
 // Expression is a type to assign to implemented expressions.
 type Expression interface{}
 
@@ -24,19 +30,32 @@ type ValuePath struct {
 	ValueExpression Expression
 }
 
-// UnaryExpression is an expression with a token bound to a (child) expression X.
+// UnaryExpression is an Expression with a token bound to a (child) expression X.
 type UnaryExpression struct {
 	Expression
 	CompareOperator Token
 	X               Expression
 }
 
-// BinaryExpression is an expression with a token bound to two (child) expressions X and Y.
+// BinaryExpression is an Expression with a token bound to two (child) expressions X and Y.
 type BinaryExpression struct {
 	Expression
 	X               Expression
 	CompareOperator Token
 	Y               Expression
+}
+
+func (path Path) String() string {
+	if path.SubAttribute == "" {
+		if path.ValueExpression != nil {
+			return fmt.Sprintf("%s[%s]", path.AttributeName, path.ValueExpression)
+		}
+		return path.AttributeName
+	}
+	if path.ValueExpression == nil {
+		return fmt.Sprintf("%s.%s", path.AttributeName, path.SubAttribute)
+	}
+	return fmt.Sprintf("%s[%s].%s", path.AttributeName, path.ValueExpression, path.SubAttribute)
 }
 
 func (expression AttributeExpression) String() string {

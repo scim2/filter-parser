@@ -43,6 +43,9 @@ func (scanner *Scanner) Scan() (Token, string) {
 		return LeftBracket, string(ch)
 	case ']':
 		return RightBracket, string(ch)
+	case '.':
+		return Dot, string(ch)
+
 	}
 
 	return UNKNOWN, string(ch)
