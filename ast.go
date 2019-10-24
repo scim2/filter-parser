@@ -30,14 +30,14 @@ type ValuePath struct {
 	ValueExpression Expression
 }
 
-// UnaryExpression is an parse with a token bound to a (child) parse X.
+// UnaryExpression is an Expression with a token bound to a (child) expression X.
 type UnaryExpression struct {
 	Expression
 	CompareOperator Token
 	X               Expression
 }
 
-// BinaryExpression is an parse with a token bound to two (child) expressions X and Y.
+// BinaryExpression is an Expression with a token bound to two (child) expressions X and Y.
 type BinaryExpression struct {
 	Expression
 	X               Expression
