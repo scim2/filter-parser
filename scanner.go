@@ -93,10 +93,7 @@ func (scanner *Scanner) scanIdentifiers() (Token, string) {
 	for {
 		if ch := scanner.read(); ch == eof {
 			break
-		} else if ch == ':' {
-			// removes all runes before last colon
-			buf = bytes.Buffer{}
-		} else if !isLetter(ch) && !isDigit(ch) && ch != '.' {
+		} else if !isLetter(ch) && !isDigit(ch) && ch != '.' && ch != ':' {
 			scanner.unread()
 			break
 		} else {
@@ -109,8 +106,7 @@ func (scanner *Scanner) scanIdentifiers() (Token, string) {
 
 // checkIdentifier checks whether given literal is a token or identifier.
 func checkIdentifier(literal string) (Token, string) {
-	lower := strings.ToLower(literal)
-	switch lower {
+	switch lower := strings.ToLower(literal); lower {
 	case "eq":
 		return EQ, lower
 	case "ne":
@@ -140,7 +136,7 @@ func checkIdentifier(literal string) (Token, string) {
 		return NOT, lower
 	}
 
-	return IDENTIFIER, lower
+	return IDENTIFIER, literal
 }
 
 // scanValue removes current rune and all the value runes after it.

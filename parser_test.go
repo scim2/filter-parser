@@ -13,6 +13,13 @@ func TestParsePath(t *testing.T) {
 		err  string
 	}{
 		{
+			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName`,
+			expr: Path{
+				URIPrefix:     "urn:ietf:params:scim:schemas:core:2.0:User",
+				AttributeName: "userName",
+			},
+		},
+		{
 			s:   `.familyName`,
 			err: `found ".", expected identifier`,
 		},
@@ -30,7 +37,7 @@ func TestParsePath(t *testing.T) {
 			s: `name.familyName`,
 			expr: Path{
 				AttributeName: "name",
-				SubAttribute:  "familyname",
+				SubAttribute:  "familyName",
 			},
 		},
 		{
@@ -54,7 +61,7 @@ func TestParsePath(t *testing.T) {
 			s: `members[value eq "id"].displayName`,
 			expr: Path{
 				AttributeName: "members",
-				SubAttribute:  "displayname",
+				SubAttribute:  "displayName",
 				ValueExpression: AttributeExpression{
 					AttributePath: AttributePath{
 						AttributeName: "value",
@@ -94,7 +101,7 @@ func TestParse_AttributeOperators(t *testing.T) {
 			s: `userName Eq "john"`,
 			expr: AttributeExpression{
 				AttributePath: AttributePath{
-					AttributeName: "username",
+					AttributeName: "userName",
 				},
 				CompareOperator: EQ,
 				CompareValue:    "john",
@@ -104,7 +111,7 @@ func TestParse_AttributeOperators(t *testing.T) {
 			s: `userName Eq "john"`,
 			expr: AttributeExpression{
 				AttributePath: AttributePath{
-					AttributeName: "username",
+					AttributeName: "userName",
 				},
 				CompareOperator: EQ,
 				CompareValue:    "john",
@@ -127,7 +134,7 @@ func TestParse_AttributeOperators(t *testing.T) {
 			s: `userName ne "john"`,
 			expr: AttributeExpression{
 				AttributePath: AttributePath{
-					AttributeName: "username",
+					AttributeName: "userName",
 				},
 				CompareOperator: NE,
 				CompareValue:    "john",
@@ -138,7 +145,7 @@ func TestParse_AttributeOperators(t *testing.T) {
 			expr: AttributeExpression{
 				AttributePath: AttributePath{
 					AttributeName: "name",
-					SubAttribute:  "familyname",
+					SubAttribute:  "familyName",
 				},
 				CompareOperator: CO,
 				CompareValue:    "doe",
@@ -148,7 +155,8 @@ func TestParse_AttributeOperators(t *testing.T) {
 			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName sw "j"`,
 			expr: AttributeExpression{
 				AttributePath: AttributePath{
-					AttributeName: "username",
+					URIPrefix:     "urn:ietf:params:scim:schemas:core:2.0:User",
+					AttributeName: "userName",
 				},
 				CompareOperator: SW,
 				CompareValue:    "j",

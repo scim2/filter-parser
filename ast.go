@@ -3,6 +3,7 @@ package filter
 import "fmt"
 
 type Path struct {
+	URIPrefix       string
 	AttributeName   string
 	SubAttribute    string
 	ValueExpression Expression
@@ -20,6 +21,7 @@ type AttributeExpression struct {
 }
 
 type AttributePath struct {
+	URIPrefix     string
 	AttributeName string
 	SubAttribute  string
 }
@@ -46,16 +48,20 @@ type BinaryExpression struct {
 }
 
 func (path Path) String() string {
+	attrName := path.AttributeName
+	if path.URIPrefix != "" {
+		attrName = fmt.Sprintf("%s:%s", path.URIPrefix, attrName)
+	}
 	if path.SubAttribute == "" {
 		if path.ValueExpression != nil {
-			return fmt.Sprintf("%s[%s]", path.AttributeName, path.ValueExpression)
+			return fmt.Sprintf("%s[%s]", attrName, path.ValueExpression)
 		}
-		return path.AttributeName
+		return attrName
 	}
 	if path.ValueExpression == nil {
-		return fmt.Sprintf("%s.%s", path.AttributeName, path.SubAttribute)
+		return fmt.Sprintf("%s.%s", attrName, path.SubAttribute)
 	}
-	return fmt.Sprintf("%s[%s].%s", path.AttributeName, path.ValueExpression, path.SubAttribute)
+	return fmt.Sprintf("%s[%s].%s", attrName, path.ValueExpression, path.SubAttribute)
 }
 
 func (expression AttributeExpression) String() string {
@@ -63,10 +69,14 @@ func (expression AttributeExpression) String() string {
 }
 
 func (attributePath AttributePath) String() string {
-	if attributePath.SubAttribute != "" {
-		return fmt.Sprintf("%s.%s", attributePath.AttributeName, attributePath.SubAttribute)
+	attrName := attributePath.AttributeName
+	if attributePath.URIPrefix != "" {
+		attrName = fmt.Sprintf("%s:%s", attributePath.URIPrefix, attrName)
 	}
-	return attributePath.AttributeName
+	if attributePath.SubAttribute != "" {
+		return fmt.Sprintf("%s.%s", attrName, attributePath.SubAttribute)
+	}
+	return attrName
 }
 
 func (valuePath ValuePath) String() string {
