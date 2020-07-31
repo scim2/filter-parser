@@ -1,6 +1,9 @@
 package filter
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Path struct {
 	URIPrefix       string
@@ -28,6 +31,7 @@ type AttributePath struct {
 
 type ValuePath struct {
 	Expression
+	URIPrefix       string
 	AttributeName   string
 	ValueExpression Expression
 }
@@ -45,6 +49,16 @@ type BinaryExpression struct {
 	X               Expression
 	CompareOperator Token
 	Y               Expression
+}
+
+func splitURIPrefix(attrName string) (string, string) {
+	var uriPrefix string
+	uriParts := strings.Split(attrName, ":")
+	if l := len(uriParts); l > 1 {
+		uriPrefix = strings.Join(uriParts[:l-1], ":")
+		attrName = uriParts[l-1]
+	}
+	return uriPrefix, attrName
 }
 
 func (path Path) String() string {
@@ -80,7 +94,11 @@ func (attributePath AttributePath) String() string {
 }
 
 func (valuePath ValuePath) String() string {
-	return fmt.Sprintf("%s[%s]", valuePath.AttributeName, valuePath.ValueExpression)
+	attrName := valuePath.AttributeName
+	if valuePath.URIPrefix != "" {
+		attrName = fmt.Sprintf("%s:%s", valuePath.URIPrefix, attrName)
+	}
+	return fmt.Sprintf("%s[%s]", attrName, valuePath.ValueExpression)
 }
 
 func (expression UnaryExpression) String() string {

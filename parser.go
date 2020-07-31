@@ -36,11 +36,7 @@ func (parser *Parser) parsePath() (Path, error) {
 	}
 
 	var uriPrefix string
-	uriParts := strings.Split(literal, ":")
-	if l := len(uriParts); l > 1 {
-		uriPrefix = strings.Join(uriParts[:l-1], ":")
-		literal = uriParts[l-1]
-	}
+	uriPrefix, literal = splitURIPrefix(literal)
 
 	if sub := strings.Split(literal, "."); len(sub) > 1 {
 		if len(sub) > 2 {
@@ -143,7 +139,11 @@ func (parser *Parser) parse(precedence int) (Expression, error) {
 		}
 
 		if parenthesis == RightBracket {
+			var uriPrefix string
+			uriPrefix, parser.prefix = splitURIPrefix(parser.prefix)
+
 			filter = ValuePath{
+				URIPrefix:       uriPrefix,
 				AttributeName:   parser.prefix,
 				ValueExpression: expression,
 			}
@@ -202,11 +202,7 @@ func (parser *Parser) parseAttributeExpression(token Token, literal string) (Att
 	}
 
 	var uriPrefix string
-	uriParts := strings.Split(literal, ":")
-	if l := len(uriParts); l > 1 {
-		uriPrefix = strings.Join(uriParts[:l-1], ":")
-		literal = uriParts[l-1]
-	}
+	uriPrefix, literal = splitURIPrefix(literal)
 
 	if sub := strings.Split(literal, "."); len(sub) > 1 {
 		if len(sub) > 2 {

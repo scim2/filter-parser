@@ -20,6 +20,20 @@ func TestParsePath(t *testing.T) {
 			},
 		},
 		{
+			s: `urn:ietf:params:scim:schemas:core:2.0:User:emails[type eq "work"]`,
+			expr: Path{
+				URIPrefix:     "urn:ietf:params:scim:schemas:core:2.0:User",
+				AttributeName: "emails",
+				ValueExpression: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "type",
+					},
+					CompareOperator: EQ,
+					CompareValue:    "work",
+				},
+			},
+		},
+		{
 			s:   `.familyName`,
 			err: `found ".", expected identifier`,
 		},
@@ -96,6 +110,31 @@ func TestParse_AttributeOperators(t *testing.T) {
 		expr Expression
 		err  string
 	}{
+		// prefixes
+		{
+			s: `urn:ietf:params:scim:schemas:core:2.0:User:userName pr`,
+			expr: AttributeExpression{
+				AttributePath: AttributePath{
+					URIPrefix:     "urn:ietf:params:scim:schemas:core:2.0:User",
+					AttributeName: "userName",
+				},
+				CompareOperator: PR,
+			},
+		},
+		{
+			s: `urn:ietf:params:scim:schemas:core:2.0:User:emails[type eq "work"]`,
+			expr: ValuePath{
+				URIPrefix:     "urn:ietf:params:scim:schemas:core:2.0:User",
+				AttributeName: "emails",
+				ValueExpression: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "type",
+					},
+					CompareOperator: EQ,
+					CompareValue:    "work",
+				},
+			},
+		},
 		// eq operator
 		{
 			s: `userName Eq "john"`,
