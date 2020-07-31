@@ -249,6 +249,27 @@ func TestParse_LogicalOperators(t *testing.T) {
 			},
 		},
 
+		// pr + an operator
+		{
+			s: `title pr and userType eq "Intern"`,
+			expr: BinaryExpression{
+				X: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "title",
+					},
+					CompareOperator: PR,
+				},
+				CompareOperator: AND,
+				Y: AttributeExpression{
+					AttributePath: AttributePath{
+						AttributeName: "userType",
+					},
+					CompareOperator: EQ,
+					CompareValue:    "Intern",
+				},
+			},
+		},
+
 		// and operator
 		{
 			s: `emails co "example.com" and emails co "example.org"`,

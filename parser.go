@@ -192,9 +192,13 @@ func (parser *Parser) parseAttributeExpression(token Token, literal string) (Att
 		return AttributeExpression{}, fmt.Errorf("found %q, expected operator", operatorLiteral)
 	}
 
-	value, valueLiteral := parser.scanIgnoreWhitespace()
-	if value != VALUE && valueLiteral != "" {
-		return AttributeExpression{}, fmt.Errorf("found %q, expected value", token)
+	var valueLiteral string
+	if operator != PR {
+		var value Token
+		value, valueLiteral = parser.scanIgnoreWhitespace()
+		if value != VALUE && valueLiteral != "" {
+			return AttributeExpression{}, fmt.Errorf("found %q, expected value", token)
+		}
 	}
 
 	var uriPrefix string
