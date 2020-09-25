@@ -1,3 +1,3 @@
-module github.com/di-wu/scim-filter-parser
+module github.com/scim2/filter-parser
 
-go 1.14
+go 1.15
