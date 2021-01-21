@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"fmt"
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/grammar"
@@ -51,7 +50,6 @@ func parseAttrPath(node *ast.Node) (AttributePath, error) {
 				attrPath.SubAttribute = &name
 			}
 		default:
-			fmt.Println(node)
 			return AttributePath{}, invalidChildTypeError(typ.AttrPath, t)
 		}
 	}

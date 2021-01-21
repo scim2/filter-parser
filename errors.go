@@ -44,3 +44,12 @@ func missingValueError(parentTyp int, valueType int) error {
 		),
 	}
 }
+
+func invalidLengthError(parentTyp int, len, actual int) error {
+	return &internalError{
+		Message: fmt.Sprintf(
+			"length was not equal to %d for %s (%03d), got %d elements",
+			len, typ.Stringer[parentTyp], parentTyp, actual,
+		),
+	}
+}
