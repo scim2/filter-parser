@@ -15,4 +15,3 @@ func Alpha(p *parser.Parser) (*parser.Cursor, bool) {
 func Digit(p *parser.Parser) (*parser.Cursor, bool) {
 	return p.Check(parser.CheckRuneRange('0', '9'))
 }
-
