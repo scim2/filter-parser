@@ -1,0 +1,20 @@
+; RFC: https://tools.ietf.org/html/rfc7644#section-3.4.2.2
+; Contains Errata: #4690
+FILTER    = attrExp / logExp / valuePath / *1"not" "(" FILTER ")"
+valuePath = attrPath "[" valFilter "]"
+valFilter = attrExp / valLogExp / *1"not" "(" valFilter ")"
+valLogExp = attrExp SP ("and" / "or") SP attrExp
+attrExp   = (attrPath SP "pr") /
+            (attrPath SP compareOp SP compValue)
+logExp    = FILTER SP ("and" / "or") SP FILTER
+compValue = false / null / true / number / string
+            ; Rules from JSON (RFC 7159).
+compareOp = "eq" / "ne" / "co" / "sw" / "ew" / "gt" / "lt" / "ge" / "le"
+attrPath  = [URI ":"] ATTRNAME *1subAttr
+            ; URI is SCIM "schema" URI.
+ATTRNAME  = ALPHA *(nameChar)
+nameChar  = "-" / "_" / DIGIT / ALPHA
+subAttr   = "." ATTRNAME
+
+; RFC: https://tools.ietf.org/html/rfc7644#section-3.5.2
+PATH      = attrPath / valuePath [subAttr]

@@ -2,109 +2,138 @@ package filter
 
 import (
 	"fmt"
-	"strings"
 )
 
-type Path struct {
-	URIPrefix       string
-	AttributeName   string
-	SubAttribute    string
-	ValueExpression Expression
-}
+type CompareOperator string
+type LogicalOperator string
+
+const (
+	PR CompareOperator = "pr"
+	EQ CompareOperator = "eq"
+	NE CompareOperator = "ne"
+	CO CompareOperator = "co"
+	SW CompareOperator = "sw"
+	EW CompareOperator = "ew"
+	GT CompareOperator = "gt"
+	LT CompareOperator = "lt"
+	GE CompareOperator = "ge"
+	LE CompareOperator = "le"
+
+	AND LogicalOperator = "and"
+	OR  LogicalOperator = "or"
+)
 
 // Expression is a type to assign to implemented expressions.
-type Expression interface{}
+type Expression interface {
+	exprNode()
+}
 
 // AttributeExpression is an Expression with a name, operator and value.
 type AttributeExpression struct {
-	Expression
-	AttributePath   AttributePath
-	CompareOperator Token
-	CompareValue    string
+	AttributePath AttributePath
+	Operator      CompareOperator
+	CompareValue  interface{}
 }
 
-type AttributePath struct {
-	URIPrefix     string
-	AttributeName string
-	SubAttribute  string
+func (e AttributeExpression) String() string {
+	s := fmt.Sprintf("%s %s", e.AttributePath.String(), e.Operator)
+	if e.CompareValue != nil {
+		s += fmt.Sprintf(" %v", e.CompareValue)
+	}
+	return s
+}
+
+type LogicalExpression struct {
+	Left, Right Expression
+	Operator    LogicalOperator
+}
+
+func (e LogicalExpression) String() string {
+	return fmt.Sprintf("%s %s %s", e.Left, e.Operator, e.Right)
 }
 
 type ValuePath struct {
-	Expression
-	URIPrefix       string
-	AttributeName   string
+	AttributePath AttributePath
+	ValueFilter   Expression
+}
+
+func (e ValuePath) String() string {
+	return fmt.Sprintf("%s[%s]", e.AttributePath, e.ValueFilter)
+}
+
+type NotExpression struct {
+	Expression Expression
+}
+
+func (e NotExpression) String() string {
+	return fmt.Sprintf("not %s", e.Expression)
+}
+
+func (*ValuePath) exprNode()           {}
+func (*AttributeExpression) exprNode() {}
+func (*LogicalExpression) exprNode()   {}
+func (*NotExpression) exprNode()       {}
+
+// AttributePath represents an attribute path. Both URIPrefix and SubAttr are
+// optional values and can be nil.
+// e.g. urn:ietf:params:scim:schemas:core:2.0:User:name.givenName
+//      ^                                          ^    ^
+//      URIPrefix                                  |    SubAttribute
+//                                                 AttributeName
+type AttributePath struct {
+	URIPrefix     *string
+	AttributeName string
+	SubAttribute  *string
+}
+
+func (p AttributePath) String() string {
+	s := p.AttributeName
+	if p.URIPrefix != nil {
+		s = fmt.Sprintf("%s:%s", p.URI(), s)
+	}
+	if p.SubAttribute != nil {
+		s = fmt.Sprintf("%s.%s", s, p.SubAttributeName())
+	}
+	return s
+}
+
+// URI returns the URI is present. Also removes the trailing ':'.
+// Returns an empty string otherwise.
+func (p *AttributePath) URI() string {
+	if p.URIPrefix != nil {
+		return *p.URIPrefix
+	}
+	return ""
+}
+
+// SubAttributeName returns the sub attribute name is present.
+// Returns an empty string otherwise.
+func (p *AttributePath) SubAttributeName() string {
+	if p.SubAttribute != nil {
+		return *p.SubAttribute
+	}
+	return ""
+}
+
+// Path describes the target of a PATCH operation. Path can have an optional
+// ValueExpression and SubAttribute.
+// e.g. members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName
+//      ^       ^                                                ^
+//      |       ValueExpression                                  SubAttribute
+//      AttributePath
+type Path struct {
+	AttributePath   AttributePath
 	ValueExpression Expression
+	SubAttribute    *string
 }
 
-// UnaryExpression is an Expression with a token bound to a (child) expression X.
-type UnaryExpression struct {
-	Expression
-	CompareOperator Token
-	X               Expression
-}
-
-// BinaryExpression is an Expression with a token bound to two (child) expressions X and Y.
-type BinaryExpression struct {
-	Expression
-	X               Expression
-	CompareOperator Token
-	Y               Expression
-}
-
-func splitURIPrefix(attrName string) (string, string) {
-	var uriPrefix string
-	uriParts := strings.Split(attrName, ":")
-	if l := len(uriParts); l > 1 {
-		uriPrefix = strings.Join(uriParts[:l-1], ":")
-		attrName = uriParts[l-1]
+func (p Path) String() string {
+	s := p.AttributePath.String()
+	if p.ValueExpression != nil {
+		s += fmt.Sprintf("[%s]", p.ValueExpression)
 	}
-	return uriPrefix, attrName
-}
-
-func (path Path) String() string {
-	attrName := path.AttributeName
-	if path.URIPrefix != "" {
-		attrName = fmt.Sprintf("%s:%s", path.URIPrefix, attrName)
+	if p.SubAttribute != nil {
+		s += fmt.Sprintf(".%s", *p.SubAttribute)
 	}
-	if path.SubAttribute == "" {
-		if path.ValueExpression != nil {
-			return fmt.Sprintf("%s[%s]", attrName, path.ValueExpression)
-		}
-		return attrName
-	}
-	if path.ValueExpression == nil {
-		return fmt.Sprintf("%s.%s", attrName, path.SubAttribute)
-	}
-	return fmt.Sprintf("%s[%s].%s", attrName, path.ValueExpression, path.SubAttribute)
-}
-
-func (expression AttributeExpression) String() string {
-	return fmt.Sprintf("'%s %s %s'", expression.AttributePath, expression.CompareOperator, expression.CompareValue)
-}
-
-func (attributePath AttributePath) String() string {
-	attrName := attributePath.AttributeName
-	if attributePath.URIPrefix != "" {
-		attrName = fmt.Sprintf("%s:%s", attributePath.URIPrefix, attrName)
-	}
-	if attributePath.SubAttribute != "" {
-		return fmt.Sprintf("%s.%s", attrName, attributePath.SubAttribute)
-	}
-	return attrName
-}
-
-func (valuePath ValuePath) String() string {
-	attrName := valuePath.AttributeName
-	if valuePath.URIPrefix != "" {
-		attrName = fmt.Sprintf("%s:%s", valuePath.URIPrefix, attrName)
-	}
-	return fmt.Sprintf("%s[%s]", attrName, valuePath.ValueExpression)
-}
-
-func (expression UnaryExpression) String() string {
-	return fmt.Sprintf("%s %s", expression.CompareOperator, expression.X)
-}
-
-func (expression BinaryExpression) String() string {
-	return fmt.Sprintf("(%s %s %s)", expression.X, expression.CompareOperator, expression.Y)
+	return s
 }

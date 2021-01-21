@@ -1,0 +1,57 @@
+# SCIM-filter (v0.1.0) github.com/scim2/filter-parser
+
+Filter          <- FilterOr
+FilterOr       <-- FilterAnd (SP+ 'or' SP+ FilterAnd)*
+FilterAnd      <-- FilterValue (SP+ 'and' SP+ FilterValue)*
+FilterNot      <-- 'not' SP* FilterParen
+FilterValue     <- ValuePath / AttrExp / FilterNot / FilterParen
+FilterParen     <- '(' SP* FilterOr 'SP* )'
+
+Path           <-- ValuePath SubAttr? / AttrPath
+
+AttrExp        <-- AttrPath SP+ ('pr' / (CompareOp SP+ CompareValue))
+AttrPath       <-- Uri? AttrName SubAttr?
+AttrName       <-- '$'? alpha NameChar*
+NameChar        <- '-' / '_' / digit / alpha
+SubAttr         <- '.' AttrName
+CompareOp      <-- 'eq' / 'ne' / 'co' / 'sw' / 'ew' / 'gt' / 'lt' / 'ge' / 'le'
+CompareValue    <- False / Null / True / Number / String
+
+ValuePath      <-- AttrPath SP* '[' SP* ValFilter SP* ']'
+ValueFilter     <- ValueLogExpOr / ValueLogExpAnd / AttrExp / ValueFilterNot
+ValueLogExpOr  <-- AttrExp SP* 'or' SP* AttrExp
+ValueLogExpAnd <-- AttrExp SP* 'and' SP* AttrExp
+ValueFilterNot <-- 'not' SP* '(' SP* ValueFilter SP* ')'
+
+alpha <- [a-z] / [A-Z]
+digit <- [0-9]
+SP    <- ' '
+
+# RFC7159.
+False <-- 'false'
+Null  <-- 'null'
+True  <-- 'true'
+
+Number   <-- Minus? Int Frac? Exp?
+Minus    <-- '-'
+Exp      <-- ('e' / 'E') Sign? Digits
+Sign     <-- '-' / '+'
+Digits   <-- [0-9]+
+Frac     <-- '.' Digits
+Int      <-- '0' / [1-9] [0-9]*
+
+String    <-- '"' Character* '"'
+Character  <- Unescaped / '\' Escaped
+Unescaped  <- [x20-x21] / [x23-x5B] / [x5D-x10FFFF]
+Escaped    <- '"'
+            / '\'
+            / '/'
+            / x62 # backspace
+            / x66 # form feed
+            / x6E # line feed
+            / x72 # carriage return
+            / x74 # tab
+            / 'u' ([0-9] / [A-F]){4}
+
+# A customized/simplified version of the URI specified in RFC3986.
+Uri <-- (([a-z] / [A-Z] / [0-9] / '.')+ ':')+
