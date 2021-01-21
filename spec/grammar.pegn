@@ -1,4 +1,4 @@
-# SCIM-filter (v0.1.0) github.com/scim2/filter-parser
+# SCIM-filter (v0.1.1) github.com/scim2/filter-parser
 
 Filter          <- FilterOr
 FilterOr       <-- FilterAnd (SP+ 'or' SP+ FilterAnd)*
@@ -17,8 +17,9 @@ SubAttr         <- '.' AttrName
 CompareOp      <-- 'eq' / 'ne' / 'co' / 'sw' / 'ew' / 'gt' / 'lt' / 'ge' / 'le'
 CompareValue    <- False / Null / True / Number / String
 
-ValuePath      <-- AttrPath SP* '[' SP* ValFilter SP* ']'
-ValueFilter     <- ValueLogExpOr / ValueLogExpAnd / AttrExp / ValueFilterNot
+ValuePath      <-- AttrPath SP* '[' SP* ValueFilterAll SP* ']'
+ValueFilterAll  <- ValueFilter / ValueFilterNot
+ValueFilter     <- ValueLogExpOr / ValueLogExpAnd / AttrExp
 ValueLogExpOr  <-- AttrExp SP* 'or' SP* AttrExp
 ValueLogExpAnd <-- AttrExp SP* 'and' SP* AttrExp
 ValueFilterNot <-- 'not' SP* '(' SP* ValueFilter SP* ')'

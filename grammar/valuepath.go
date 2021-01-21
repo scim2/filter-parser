@@ -14,10 +14,17 @@ func ValuePath(p *ast.Parser) (*ast.Node, error) {
 			op.MinZero(SP),
 			'[',
 			op.MinZero(SP),
-			ValueFilter,
+			ValueFilterAll,
 			op.MinZero(SP),
 			']',
 		},
+	})
+}
+
+func ValueFilterAll(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(op.Or{
+		ValueFilter,
+		ValueFilterNot,
 	})
 }
 
@@ -26,7 +33,6 @@ func ValueFilter(p *ast.Parser) (*ast.Node, error) {
 		ValueLogExpOr,
 		ValueLogExpAnd,
 		AttrExp,
-		ValueFilterNot,
 	})
 }
 

@@ -28,6 +28,11 @@ type Expression interface {
 	exprNode()
 }
 
+func (*ValuePath) exprNode()           {}
+func (*AttributeExpression) exprNode() {}
+func (*LogicalExpression) exprNode()   {}
+func (*NotExpression) exprNode()       {}
+
 // AttributeExpression is an Expression with a name, operator and value.
 type AttributeExpression struct {
 	AttributePath AttributePath
@@ -36,7 +41,7 @@ type AttributeExpression struct {
 }
 
 func (e AttributeExpression) String() string {
-	s := fmt.Sprintf("%s %s", e.AttributePath.String(), e.Operator)
+	s := fmt.Sprintf("%v %s", e.AttributePath, e.Operator)
 	if e.CompareValue != nil {
 		switch e.CompareValue.(type) {
 		case string:
@@ -54,7 +59,7 @@ type LogicalExpression struct {
 }
 
 func (e LogicalExpression) String() string {
-	return fmt.Sprintf("%s %s %s", e.Left, e.Operator, e.Right)
+	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
 }
 
 type ValuePath struct {
@@ -63,7 +68,7 @@ type ValuePath struct {
 }
 
 func (e ValuePath) String() string {
-	return fmt.Sprintf("%s[%s]", e.AttributePath, e.ValueFilter)
+	return fmt.Sprintf("%v[%v]", e.AttributePath, e.ValueFilter)
 }
 
 type NotExpression struct {
@@ -71,13 +76,8 @@ type NotExpression struct {
 }
 
 func (e NotExpression) String() string {
-	return fmt.Sprintf("not %s", e.Expression)
+	return fmt.Sprintf("not(%v)", e.Expression)
 }
-
-func (*ValuePath) exprNode()           {}
-func (*AttributeExpression) exprNode() {}
-func (*LogicalExpression) exprNode()   {}
-func (*NotExpression) exprNode()       {}
 
 // AttributePath represents an attribute path. Both URIPrefix and SubAttr are
 // optional values and can be nil.
