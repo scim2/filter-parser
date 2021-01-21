@@ -38,7 +38,12 @@ type AttributeExpression struct {
 func (e AttributeExpression) String() string {
 	s := fmt.Sprintf("%s %s", e.AttributePath.String(), e.Operator)
 	if e.CompareValue != nil {
-		s += fmt.Sprintf(" %v", e.CompareValue)
+		switch e.CompareValue.(type) {
+		case string:
+			s += fmt.Sprintf(" %q", e.CompareValue)
+		default:
+			s += fmt.Sprintf(" %v", e.CompareValue)
+		}
 	}
 	return s
 }
