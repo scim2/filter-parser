@@ -4,26 +4,45 @@ import (
 	"fmt"
 )
 
+// CompareOperator represents a compare operation.
 type CompareOperator string
+// LogicalOperator represents a logical operation such as 'and' / 'or'.
 type LogicalOperator string
 
 const (
+	// PR is an abbreviation for 'present'.
 	PR CompareOperator = "pr"
+	// EQ is an abbreviation for 'equals'.
 	EQ CompareOperator = "eq"
+	// NE is an abbreviation for 'not equals'.
 	NE CompareOperator = "ne"
+	// CO is an abbreviation for 'contains'.
 	CO CompareOperator = "co"
+	// SW is an abbreviation for 'starts with'.
 	SW CompareOperator = "sw"
+	// EW an abbreviation for 'ends with'.
 	EW CompareOperator = "ew"
+	// GT is an abbreviation for 'greater than'.
 	GT CompareOperator = "gt"
+	// LT is an abbreviation for 'less than'.
 	LT CompareOperator = "lt"
+	// GE is an abbreviation for 'greater or equal than'.
 	GE CompareOperator = "ge"
+	// LE is an abbreviation for 'less or equal than'.
 	LE CompareOperator = "le"
 
+	// AND is the logical operation and (&&).
 	AND LogicalOperator = "and"
+	// OR is the logical operation or (||).
 	OR  LogicalOperator = "or"
 )
 
 // Expression is a type to assign to implemented expressions.
+// Valid expressions are:
+//	- ValuePath
+//	- AttributeExpression
+//	- LogicalExpression
+// 	- NotExpression
 type Expression interface {
 	exprNode()
 }
@@ -33,7 +52,7 @@ func (*AttributeExpression) exprNode() {}
 func (*LogicalExpression) exprNode()   {}
 func (*NotExpression) exprNode()       {}
 
-// AttributeExpression is an Expression with a name, operator and value.
+// AttributeExpression represents an attribute expression/filter.
 type AttributeExpression struct {
 	AttributePath AttributePath
 	Operator      CompareOperator
@@ -53,6 +72,7 @@ func (e AttributeExpression) String() string {
 	return s
 }
 
+// LogicalExpression represents an 'and' / 'or' node.
 type LogicalExpression struct {
 	Left, Right Expression
 	Operator    LogicalOperator
@@ -62,6 +82,7 @@ func (e LogicalExpression) String() string {
 	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
 }
 
+// ValuePath represents a filter on a attribute path.
 type ValuePath struct {
 	AttributePath AttributePath
 	ValueFilter   Expression
@@ -71,6 +92,7 @@ func (e ValuePath) String() string {
 	return fmt.Sprintf("%v[%v]", e.AttributePath, e.ValueFilter)
 }
 
+// NotExpression represents an 'not' node.
 type NotExpression struct {
 	Expression Expression
 }
@@ -102,7 +124,7 @@ func (p AttributePath) String() string {
 	return s
 }
 
-// URI returns the URI is present. Also removes the trailing ':'.
+// URI returns the URI if present.
 // Returns an empty string otherwise.
 func (p *AttributePath) URI() string {
 	if p.URIPrefix != nil {
@@ -111,7 +133,7 @@ func (p *AttributePath) URI() string {
 	return ""
 }
 
-// SubAttributeName returns the sub attribute name is present.
+// SubAttributeName returns the sub attribute name if present.
 // Returns an empty string otherwise.
 func (p *AttributePath) SubAttributeName() string {
 	if p.SubAttribute != nil {
@@ -141,4 +163,13 @@ func (p Path) String() string {
 		s += fmt.Sprintf(".%s", *p.SubAttribute)
 	}
 	return s
+}
+
+// SubAttributeName returns the sub attribute name if present.
+// Returns an empty string otherwise.
+func (p *Path) SubAttributeName() string {
+	if p.SubAttribute != nil {
+		return *p.SubAttribute
+	}
+	return ""
 }
