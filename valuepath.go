@@ -98,6 +98,6 @@ func parseValueFilter(node *ast.Node) (Expression, error) {
 			Expression: valueFilter,
 		}, nil
 	default:
-		return nil, invalidChildTypeError(typ.ValuePath, node.Type)
+		return nil, invalidChildTypeError(typ.ValuePath, t)
 	}
 }
