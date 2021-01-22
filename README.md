@@ -1,5 +1,5 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/di-wu/scim-filter-parser)](https://goreportcard.com/report/github.com/di-wu/scim-filter-parser)
-[![GoDoc](https://godoc.org/github.com/di-wu/scim-filter-parser?status.svg)](https://godoc.org/github.com/di-wu/scim-filter-parser)
+[![Go Report Card](https://goreportcard.com/badge/github.com/scim2/filter-parser)](https://goreportcard.com/report/github.com/scim2/filter-parser)
+[![GoDoc](https://godoc.org/github.com/scim2/filter-parser?status.svg)](https://godoc.org/github.com/scim2/filter-parser)
 
 # Query Filter Parser for SCIM v2.0
 
