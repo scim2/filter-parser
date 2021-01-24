@@ -87,6 +87,7 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 }
 
 func parseNumber(node *ast.Node) (interface{}, error) {
+	var frac, exp bool
 	var nStr string
 	for _, node := range node.Children() {
 		switch t := node.Type; t {
@@ -95,12 +96,14 @@ func parseNumber(node *ast.Node) (interface{}, error) {
 		case typ.Int:
 			nStr += node.ValueString()
 		case typ.Frac:
+			frac = true
 			children := node.Children()
 			if l := len(children); l != 1 {
 				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
 			}
 			nStr += fmt.Sprintf(".%s", children[0].ValueString())
 		case typ.Exp:
+			exp = true
 			nStr += "e"
 			for _, node := range node.Children() {
 				switch t := node.Type; t {
@@ -122,7 +125,9 @@ func parseNumber(node *ast.Node) (interface{}, error) {
 		}
 	}
 
-	if f == float64(int(f)) {
+	// Integers can not contain fractional or exponent parts.
+	// More info: https://tools.ietf.org/html/rfc7643#section-2.3.4
+	if !frac && !exp {
 		return int(f), nil
 	}
 	return f, err

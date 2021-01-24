@@ -30,6 +30,10 @@ func TestParseNumber(t *testing.T) {
 		},
 		{
 			nStr:     "-5.1e2",
+			expected: float64(-510),
+		},
+		{
+			nStr:     "-510",
 			expected: -510,
 		},
 	} {
