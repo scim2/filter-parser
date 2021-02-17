@@ -2,7 +2,7 @@ package filter
 
 import (
 	"fmt"
-	typ "github.com/scim2/filter-parser/types"
+	typ "github.com/scim2/filter-parser/v2/types"
 )
 
 // internalError represents an internal error. If this error should NEVER occur.

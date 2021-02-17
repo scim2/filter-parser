@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"github.com/scim2/filter-parser/types"
+	typ "github.com/scim2/filter-parser/v2/types"
 )
 
 func URI(p *ast.Parser) (*ast.Node, error) {
