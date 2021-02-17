@@ -68,3 +68,28 @@ func TestParseFilter(t *testing.T) {
 		})
 	}
 }
+
+func Example_walk() {
+	expression, _ := ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co \"@foo.com\"]"))
+	var walk func(e Expression) error
+	walk = func(e Expression) error {
+		switch v := e.(type) {
+		case *LogicalExpression:
+			_ = walk(v.Left)
+			_ = walk(v.Right)
+		case *ValuePath:
+			_ = walk(v.ValueFilter)
+		case *AttributeExpression:
+			fmt.Printf("%s %s %q\n", v.AttributePath, v.Operator, v.CompareValue)
+		default:
+			// etc...
+		}
+		return nil
+	}
+	_ = walk(expression)
+	// Output:
+	// type eq "work"
+	// value co "@example.com"
+	// type eq "xmpp"
+	// value co "@foo.com"
+}
