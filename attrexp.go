@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
-	"github.com/scim2/filter-parser/grammar"
-	"github.com/scim2/filter-parser/types"
+	"github.com/scim2/filter-parser/v2/grammar"
+	"github.com/scim2/filter-parser/v2/types"
 	"strconv"
 	"strings"
 )
