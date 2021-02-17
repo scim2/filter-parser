@@ -1,4 +1,4 @@
-module github.com/scim2/filter-parser
+module github.com/scim2/filter-parser/v2
 
 go 1.15
 
