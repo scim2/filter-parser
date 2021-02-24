@@ -60,6 +60,10 @@ func TestParseFilter(t *testing.T) {
 		"userType eq \"Employee\" and (emails.type eq \"work\")",
 		"userType eq \"Employee\" and emails[type eq \"work\" and value co \"@example.com\"]",
 		"emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co \"@foo.com\"]",
+
+		"name pr and userName pr and title pr",
+		"name pr and not (first eq \"test\") and another ne \"test\"",
+		"name pr or userName pr or title pr",
 	} {
 		t.Run(example, func(t *testing.T) {
 			if _, err := ParseFilter([]byte(example)); err != nil {
