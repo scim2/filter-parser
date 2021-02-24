@@ -51,7 +51,11 @@ func parseFilterOr(node *ast.Node) (Expression, error) {
 			or.Operator = OR
 		default:
 			or = LogicalExpression{
-				Left:     &or,
+				Left: &LogicalExpression{
+					Left:     or.Left,
+					Right:    or.Right,
+					Operator: OR,
+				},
 				Right:    exp,
 				Operator: OR,
 			}
@@ -88,7 +92,11 @@ func parseFilterAnd(node *ast.Node) (Expression, error) {
 			and.Operator = AND
 		default:
 			and = LogicalExpression{
-				Left:     &and,
+				Left:     &LogicalExpression{
+					Left:     and.Left,
+					Right:    and.Right,
+					Operator: AND,
+				},
 				Right:    exp,
 				Operator: AND,
 			}
