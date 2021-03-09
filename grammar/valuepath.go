@@ -1,14 +1,16 @@
 package grammar
 
 import (
+	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	typ "github.com/scim2/filter-parser/v2/types"
+	"github.com/scim2/filter-parser/v2/types"
 )
 
 func ValuePath(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.ValuePath,
+		Type:        typ.ValuePath,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			AttrPath,
 			op.MinZero(SP),
@@ -38,11 +40,12 @@ func ValueFilter(p *ast.Parser) (*ast.Node, error) {
 
 func ValueLogExpOr(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.ValueLogExpOr,
+		Type:        typ.ValueLogExpOr,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			AttrExp,
 			op.MinZero(SP),
-			"or",
+			parser.CheckStringCI("or"),
 			op.MinZero(SP),
 			AttrExp,
 		},
@@ -51,11 +54,12 @@ func ValueLogExpOr(p *ast.Parser) (*ast.Node, error) {
 
 func ValueLogExpAnd(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.ValueLogExpAnd,
+		Type:        typ.ValueLogExpAnd,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			AttrExp,
 			op.MinZero(SP),
-			"and",
+			parser.CheckStringCI("and"),
 			op.MinZero(SP),
 			AttrExp,
 		},
@@ -64,9 +68,10 @@ func ValueLogExpAnd(p *ast.Parser) (*ast.Node, error) {
 
 func ValueFilterNot(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.ValueFilterNot,
+		Type:        typ.ValueFilterNot,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
-			"not",
+			parser.CheckStringCI("not"),
 			op.MinZero(SP),
 			'(',
 			op.MinZero(SP),

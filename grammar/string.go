@@ -10,7 +10,8 @@ import (
 func String(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.String,
+			Type:        typ.String,
+			TypeStrings: typ.Stringer,
 			Value: op.And{
 				"\"",
 				op.MinZero(

@@ -44,6 +44,7 @@ func ExampleParseFilter_parentheses() {
 func TestParseFilter(t *testing.T) {
 	for _, example := range []string{
 		"userName eq \"bjensen\"",
+		"userName Eq \"bjensen\"",
 		"name.familyName co \"O'Malley\"",
 		"userName sw \"J\"",
 		"urn:ietf:params:scim:schemas:core:2.0:User:userName sw \"J\"",
@@ -63,6 +64,7 @@ func TestParseFilter(t *testing.T) {
 
 		"name pr and userName pr and title pr",
 		"name pr and not (first eq \"test\") and another ne \"test\"",
+		"NAME PR AND NOT (FIRST EQ \"test\") AND ANOTHER NE \"test\"",
 		"name pr or userName pr or title pr",
 	} {
 		t.Run(example, func(t *testing.T) {
@@ -71,6 +73,12 @@ func TestParseFilter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ExampleParseFilter_caseInsensitivity() {
+	fmt.Println(ParseFilter([]byte("NAME PR AND NOT (FIRST EQ \"test\") AND ANOTHER NE \"test\"")))
+	// Output:
+	// NAME pr and not(FIRST eq "test") and ANOTHER ne "test" <nil>
 }
 
 func Example_walk() {

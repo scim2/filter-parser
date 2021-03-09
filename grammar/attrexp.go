@@ -1,19 +1,21 @@
 package grammar
 
 import (
+	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	typ "github.com/scim2/filter-parser/v2/types"
+	"github.com/scim2/filter-parser/v2/types"
 )
 
 func AttrExp(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.AttrExp,
+		Type:        typ.AttrExp,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			AttrPath,
 			op.MinOne(SP),
 			op.Or{
-				"pr",
+				parser.CheckStringCI("pr"),
 				op.And{
 					CompareOp,
 					op.MinOne(SP),
@@ -26,7 +28,8 @@ func AttrExp(p *ast.Parser) (*ast.Node, error) {
 
 func AttrPath(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.AttrPath,
+		Type:        typ.AttrPath,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			op.Optional(URI),
 			AttrName,
@@ -37,7 +40,8 @@ func AttrPath(p *ast.Parser) (*ast.Node, error) {
 
 func AttrName(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.AttrName,
+		Type:        typ.AttrName,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			op.Optional('$'),
 			Alpha,
@@ -56,8 +60,19 @@ func SubAttr(p *ast.Parser) (*ast.Node, error) {
 
 func CompareOp(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type:  typ.CompareOp,
-		Value: op.Or{"eq", "ne", "co", "sw", "ew", "gt", "lt", "ge", "le"},
+		Type:        typ.CompareOp,
+		TypeStrings: typ.Stringer,
+		Value: op.Or{
+			parser.CheckStringCI("eq"),
+			parser.CheckStringCI("ne"),
+			parser.CheckStringCI("co"),
+			parser.CheckStringCI("sw"),
+			parser.CheckStringCI("ew"),
+			parser.CheckStringCI("gt"),
+			parser.CheckStringCI("lt"),
+			parser.CheckStringCI("ge"),
+			parser.CheckStringCI("le"),
+		},
 	})
 }
 

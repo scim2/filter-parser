@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/v2/grammar"
-	typ "github.com/scim2/filter-parser/v2/types"
+	"github.com/scim2/filter-parser/v2/types"
 )
 
 // ParseValuePath parses the given raw data as an ValuePath.

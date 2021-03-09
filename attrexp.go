@@ -54,7 +54,7 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 	}
 
 	var (
-		compareOp    = CompareOperator(children[1].ValueString())
+		compareOp    = CompareOperator(strings.ToLower(children[1].Value))
 		compareValue interface{}
 	)
 	switch node := children[2]; node.Type {
@@ -71,7 +71,7 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 		}
 		compareValue = value
 	case typ.String:
-		str := node.ValueString()
+		str := node.Value
 		str = strings.TrimPrefix(str, "\"")
 		str = strings.TrimSuffix(str, "\"")
 		compareValue = str
@@ -94,21 +94,21 @@ func parseNumber(node *ast.Node) (interface{}, error) {
 		case typ.Minus:
 			nStr = "-"
 		case typ.Int:
-			nStr += node.ValueString()
+			nStr += node.Value
 		case typ.Frac:
 			frac = true
 			children := node.Children()
 			if l := len(children); l != 1 {
 				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
 			}
-			nStr += fmt.Sprintf(".%s", children[0].ValueString())
+			nStr += fmt.Sprintf(".%s", children[0].Value)
 		case typ.Exp:
 			exp = true
 			nStr += "e"
 			for _, node := range node.Children() {
 				switch t := node.Type; t {
 				case typ.Sign, typ.Digits:
-					nStr += node.ValueString()
+					nStr += node.Value
 				default:
 					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
 

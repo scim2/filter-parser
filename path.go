@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/v2/grammar"
-	typ "github.com/scim2/filter-parser/v2/types"
+	"github.com/scim2/filter-parser/v2/types"
 )
 
 // ParsePath parses the given raw data as an Path.
@@ -56,7 +56,7 @@ func parsePath(node *ast.Node) (Path, error) {
 		if node.Type != typ.AttrName {
 			return Path{}, invalidTypeError(typ.AttrName, node.Type)
 		}
-		value := node.ValueString()
+		value := node.Value
 		subAttr = &value
 	}
 

@@ -37,11 +37,11 @@ func parseAttrPath(node *ast.Node) (AttributePath, error) {
 	for _, node := range node.Children() {
 		switch t := node.Type; t {
 		case typ.URI:
-			uri := node.ValueString()
+			uri := node.Value
 			uri = strings.TrimSuffix(uri, ":")
 			attrPath.URIPrefix = &uri
 		case typ.AttrName:
-			name := node.ValueString()
+			name := node.Value
 			if attrPath.AttributeName == "" {
 				attrPath.AttributeName = name
 
