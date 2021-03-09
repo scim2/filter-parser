@@ -1,6 +1,7 @@
 package grammar
 
 import (
+	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
 	"github.com/scim2/filter-parser/v2/types"
@@ -12,12 +13,13 @@ func Filter(p *ast.Parser) (*ast.Node, error) {
 
 func FilterOr(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.FilterOr,
+		Type:        typ.FilterOr,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			FilterAnd,
 			op.MinZero(op.And{
 				op.MinOne(SP),
-				"or",
+				parser.CheckStringCI("or"),
 				op.MinOne(SP),
 				FilterAnd,
 			}),
@@ -27,12 +29,13 @@ func FilterOr(p *ast.Parser) (*ast.Node, error) {
 
 func FilterAnd(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.FilterAnd,
+		Type:        typ.FilterAnd,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
 			FilterValue,
 			op.MinZero(op.And{
 				op.MinOne(SP),
-				"and",
+				parser.CheckStringCI("and"),
 				op.MinOne(SP),
 				FilterValue,
 			}),
@@ -42,9 +45,10 @@ func FilterAnd(p *ast.Parser) (*ast.Node, error) {
 
 func FilterNot(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.FilterNot,
+		Type:        typ.FilterNot,
+		TypeStrings: typ.Stringer,
 		Value: op.And{
-			"not",
+			parser.CheckStringCI("not"),
 			op.MinZero(SP),
 			FilterParentheses,
 		},

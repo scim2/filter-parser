@@ -13,8 +13,8 @@ func ExampleFilterOr() {
 	p("title pr or userType eq \"Intern\"")
 	p("emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co \"@foo.com\"]")
 	// Output:
-	// [001] [[002] [[005] [[006] [[007] title]]], [002] [[005] [[006] [[007] userType], [008] eq, [023] "Intern"]]] <nil>
-	// [001] [[002] [[009] [[006] [[007] emails], [011] [[005] [[006] [[007] type], [008] eq, [023] "work"], [005] [[006] [[007] value], [008] co, [023] "@example.com"]]]], [002] [[009] [[006] [[007] ims], [011] [[005] [[006] [[007] type], [008] eq, [023] "xmpp"], [005] [[006] [[007] value], [008] co, [023] "@foo.com"]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","title"]]]]]]],["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Intern\""]]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["ValuePath",[["AttrPath",[["AttrName","emails"]]],["ValueLogExpAnd",[["AttrExp",[["AttrPath",[["AttrName","type"]]],["CompareOp","eq"],["String","\"work\""]]],["AttrExp",[["AttrPath",[["AttrName","value"]]],["CompareOp","co"],["String","\"@example.com\""]]]]]]]]],["FilterAnd",[["ValuePath",[["AttrPath",[["AttrName","ims"]]],["ValueLogExpAnd",[["AttrExp",[["AttrPath",[["AttrName","type"]]],["CompareOp","eq"],["String","\"xmpp\""]]],["AttrExp",[["AttrPath",[["AttrName","value"]]],["CompareOp","co"],["String","\"@foo.com\""]]]]]]]]]]] <nil>
 }
 
 func ExampleFilterAnd() {
@@ -25,8 +25,8 @@ func ExampleFilterAnd() {
 	p("title pr and userType eq \"Employee\"")
 	p("userType eq \"Employee\" and emails[type eq \"work\" and value co \"@example.com\"]")
 	// Output:
-	// [001] [[002] [[005] [[006] [[007] title]], [005] [[006] [[007] userType], [008] eq, [023] "Employee"]]] <nil>
-	// [001] [[002] [[005] [[006] [[007] userType], [008] eq, [023] "Employee"], [009] [[006] [[007] emails], [011] [[005] [[006] [[007] type], [008] eq, [023] "work"], [005] [[006] [[007] value], [008] co, [023] "@example.com"]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","title"]]]]],["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["ValuePath",[["AttrPath",[["AttrName","emails"]]],["ValueLogExpAnd",[["AttrExp",[["AttrPath",[["AttrName","type"]]],["CompareOp","eq"],["String","\"work\""]]],["AttrExp",[["AttrPath",[["AttrName","value"]]],["CompareOp","co"],["String","\"@example.com\""]]]]]]]]]]] <nil>
 }
 
 func ExampleFilterNot() {
@@ -36,7 +36,7 @@ func ExampleFilterNot() {
 	}
 	p("userType ne \"Employee\" and not (emails co \"example.com\" or emails.value co \"example.org\")")
 	// Output:
-	// [001] [[002] [[005] [[006] [[007] userType], [008] ne, [023] "Employee"], [003] [[001] [[002] [[005] [[006] [[007] emails], [008] co, [023] "example.com"]], [002] [[005] [[006] [[007] emails, [007] value], [008] co, [023] "example.org"]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","ne"],["String","\"Employee\""]]],["FilterNot",[["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"]]],["CompareOp","co"],["String","\"example.com\""]]]]],["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","value"]]],["CompareOp","co"],["String","\"example.org\""]]]]]]]]]]]]] <nil>
 }
 
 func ExampleFilterParentheses() {
@@ -47,6 +47,6 @@ func ExampleFilterParentheses() {
 	p("userType eq \"Employee\" and (emails.type eq \"work\")")
 	p("userType eq \"Employee\" and (emails co \"example.com\" or emails.value co \"example.org\")")
 	// Output:
-	// [001] [[002] [[005] [[006] [[007] userType], [008] eq, [023] "Employee"], [001] [[002] [[005] [[006] [[007] emails, [007] type], [008] eq, [023] "work"]]]]] <nil>
-	// [001] [[002] [[005] [[006] [[007] userType], [008] eq, [023] "Employee"], [001] [[002] [[005] [[006] [[007] emails], [008] co, [023] "example.com"]], [002] [[005] [[006] [[007] emails, [007] value], [008] co, [023] "example.org"]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","type"]]],["CompareOp","eq"],["String","\"work\""]]]]]]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"]]],["CompareOp","co"],["String","\"example.com\""]]]]],["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","value"]]],["CompareOp","co"],["String","\"example.org\""]]]]]]]]]]] <nil>
 }

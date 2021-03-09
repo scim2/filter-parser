@@ -9,7 +9,8 @@ import (
 
 func URI(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
-		Type: typ.URI,
+		Type:        typ.URI,
+		TypeStrings: typ.Stringer,
 		Value: op.MinOne(op.And{
 			op.MinOne(op.Or{
 				parser.CheckRuneRange('a', 'z'),

@@ -6,6 +6,7 @@ import (
 
 // CompareOperator represents a compare operation.
 type CompareOperator string
+
 // LogicalOperator represents a logical operation such as 'and' / 'or'.
 type LogicalOperator string
 
@@ -34,7 +35,7 @@ const (
 	// AND is the logical operation and (&&).
 	AND LogicalOperator = "and"
 	// OR is the logical operation or (||).
-	OR  LogicalOperator = "or"
+	OR LogicalOperator = "or"
 )
 
 // Expression is a type to assign to implemented expressions.

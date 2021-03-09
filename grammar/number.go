@@ -10,7 +10,8 @@ import (
 func Number(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Number,
+			Type:        typ.Number,
+			TypeStrings: typ.Stringer,
 			Value: op.And{
 				op.Optional(
 					Minus,
@@ -30,8 +31,9 @@ func Number(p *ast.Parser) (*ast.Node, error) {
 func Minus(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type:  typ.Minus,
-			Value: "-",
+			Type:        typ.Minus,
+			TypeStrings: typ.Stringer,
+			Value:       "-",
 		},
 	)
 }
@@ -39,7 +41,8 @@ func Minus(p *ast.Parser) (*ast.Node, error) {
 func Exp(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Exp,
+			Type:        typ.Exp,
+			TypeStrings: typ.Stringer,
 			Value: op.And{
 				op.Or{
 					"e",
@@ -57,7 +60,8 @@ func Exp(p *ast.Parser) (*ast.Node, error) {
 func Sign(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Sign,
+			Type:        typ.Sign,
+			TypeStrings: typ.Stringer,
 			Value: op.Or{
 				"-",
 				"+",
@@ -69,7 +73,8 @@ func Sign(p *ast.Parser) (*ast.Node, error) {
 func Digits(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Digits,
+			Type:        typ.Digits,
+			TypeStrings: typ.Stringer,
 			Value: op.MinOne(
 				parser.CheckRuneRange('0', '9'),
 			),
@@ -80,7 +85,8 @@ func Digits(p *ast.Parser) (*ast.Node, error) {
 func Frac(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Frac,
+			Type:        typ.Frac,
+			TypeStrings: typ.Stringer,
 			Value: op.And{
 				".",
 				Digits,
@@ -92,7 +98,8 @@ func Frac(p *ast.Parser) (*ast.Node, error) {
 func Int(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type: typ.Int,
+			Type:        typ.Int,
+			TypeStrings: typ.Stringer,
 			Value: op.Or{
 				"0",
 				op.And{

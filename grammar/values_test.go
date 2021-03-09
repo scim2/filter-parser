@@ -9,12 +9,12 @@ func ExampleFalse() {
 	p, _ := ast.New([]byte("FaLSe"))
 	fmt.Println(False(p))
 	// Output:
-	// [013] FaLSe <nil>
+	// ["False","FaLSe"] <nil>
 }
 
 func ExampleTrue() {
 	p, _ := ast.New([]byte("TRue"))
 	fmt.Println(True(p))
 	// Output:
-	// [015] TRue <nil>
+	// ["True","TRue"] <nil>
 }
