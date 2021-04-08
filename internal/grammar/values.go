@@ -3,7 +3,7 @@ package grammar
 import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
-	"github.com/scim2/filter-parser/v2/types"
+	"github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // A boolean has no case sensitivity or uniqueness.
