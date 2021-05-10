@@ -7,22 +7,6 @@ import (
 	"github.com/scim2/filter-parser/v2/types"
 )
 
-func String(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		ast.Capture{
-			Type:        typ.String,
-			TypeStrings: typ.Stringer,
-			Value: op.And{
-				"\"",
-				op.MinZero(
-					Character,
-				),
-				"\"",
-			},
-		},
-	)
-}
-
 func Character(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		op.Or{
@@ -31,16 +15,6 @@ func Character(p *ast.Parser) (*ast.Node, error) {
 				"\\",
 				Escaped,
 			},
-		},
-	)
-}
-
-func Unescaped(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		op.Or{
-			parser.CheckRuneRange(0x0020, 0x0021),
-			parser.CheckRuneRange(0x0023, 0x005B),
-			parser.CheckRuneRange(0x005D, 0x0010FFFF),
 		},
 	)
 }
@@ -65,6 +39,32 @@ func Escaped(p *ast.Parser) (*ast.Node, error) {
 					},
 				),
 			},
+		},
+	)
+}
+
+func String(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(
+		ast.Capture{
+			Type:        typ.String,
+			TypeStrings: typ.Stringer,
+			Value: op.And{
+				"\"",
+				op.MinZero(
+					Character,
+				),
+				"\"",
+			},
+		},
+	)
+}
+
+func Unescaped(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(
+		op.Or{
+			parser.CheckRuneRange(0x0020, 0x0021),
+			parser.CheckRuneRange(0x0023, 0x005B),
+			parser.CheckRuneRange(0x005D, 0x0010FFFF),
 		},
 	)
 }

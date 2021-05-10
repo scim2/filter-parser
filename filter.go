@@ -23,47 +23,6 @@ func ParseFilter(raw []byte) (Expression, error) {
 	return parseFilterOr(node)
 }
 
-func parseFilterOr(node *ast.Node) (Expression, error) {
-	if node.Type != typ.FilterOr {
-		return nil, invalidTypeError(typ.FilterOr, node.Type)
-	}
-
-	children := node.Children()
-	if len(children) == 0 {
-		return nil, invalidLengthError(typ.FilterOr, 1, 0)
-	}
-
-	if len(children) == 1 {
-		return parseFilterAnd(children[0])
-	}
-
-	var or LogicalExpression
-	for _, node := range children {
-		exp, err := parseFilterAnd(node)
-		if err != nil {
-			return nil, err
-		}
-		switch {
-		case or.Left == nil:
-			or.Left = exp
-		case or.Right == nil:
-			or.Right = exp
-			or.Operator = OR
-		default:
-			or = LogicalExpression{
-				Left: &LogicalExpression{
-					Left:     or.Left,
-					Right:    or.Right,
-					Operator: OR,
-				},
-				Right:    exp,
-				Operator: OR,
-			}
-		}
-	}
-	return &or, nil
-}
-
 func parseFilterAnd(node *ast.Node) (Expression, error) {
 	if node.Type != typ.FilterAnd {
 		return nil, invalidTypeError(typ.FilterAnd, node.Type)
@@ -103,6 +62,47 @@ func parseFilterAnd(node *ast.Node) (Expression, error) {
 		}
 	}
 	return &and, nil
+}
+
+func parseFilterOr(node *ast.Node) (Expression, error) {
+	if node.Type != typ.FilterOr {
+		return nil, invalidTypeError(typ.FilterOr, node.Type)
+	}
+
+	children := node.Children()
+	if len(children) == 0 {
+		return nil, invalidLengthError(typ.FilterOr, 1, 0)
+	}
+
+	if len(children) == 1 {
+		return parseFilterAnd(children[0])
+	}
+
+	var or LogicalExpression
+	for _, node := range children {
+		exp, err := parseFilterAnd(node)
+		if err != nil {
+			return nil, err
+		}
+		switch {
+		case or.Left == nil:
+			or.Left = exp
+		case or.Right == nil:
+			or.Right = exp
+			or.Operator = OR
+		default:
+			or = LogicalExpression{
+				Left: &LogicalExpression{
+					Left:     or.Left,
+					Right:    or.Right,
+					Operator: OR,
+				},
+				Right:    exp,
+				Operator: OR,
+			}
+		}
+	}
+	return &or, nil
 }
 
 func parseFilterValue(node *ast.Node) (Expression, error) {

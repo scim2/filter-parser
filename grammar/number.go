@@ -7,33 +7,14 @@ import (
 	"github.com/scim2/filter-parser/v2/types"
 )
 
-func Number(p *ast.Parser) (*ast.Node, error) {
+func Digits(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		ast.Capture{
-			Type:        typ.Number,
+			Type:        typ.Digits,
 			TypeStrings: typ.Stringer,
-			Value: op.And{
-				op.Optional(
-					Minus,
-				),
-				Int,
-				op.Optional(
-					Frac,
-				),
-				op.Optional(
-					Exp,
-				),
-			},
-		},
-	)
-}
-
-func Minus(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		ast.Capture{
-			Type:        typ.Minus,
-			TypeStrings: typ.Stringer,
-			Value:       "-",
+			Value: op.MinOne(
+				parser.CheckRuneRange('0', '9'),
+			),
 		},
 	)
 }
@@ -53,31 +34,6 @@ func Exp(p *ast.Parser) (*ast.Node, error) {
 				),
 				Digits,
 			},
-		},
-	)
-}
-
-func Sign(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		ast.Capture{
-			Type:        typ.Sign,
-			TypeStrings: typ.Stringer,
-			Value: op.Or{
-				"-",
-				"+",
-			},
-		},
-	)
-}
-
-func Digits(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		ast.Capture{
-			Type:        typ.Digits,
-			TypeStrings: typ.Stringer,
-			Value: op.MinOne(
-				parser.CheckRuneRange('0', '9'),
-			),
 		},
 	)
 }
@@ -108,6 +64,50 @@ func Int(p *ast.Parser) (*ast.Node, error) {
 						parser.CheckRuneRange('0', '9'),
 					),
 				},
+			},
+		},
+	)
+}
+
+func Minus(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(
+		ast.Capture{
+			Type:        typ.Minus,
+			TypeStrings: typ.Stringer,
+			Value:       "-",
+		},
+	)
+}
+
+func Number(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(
+		ast.Capture{
+			Type:        typ.Number,
+			TypeStrings: typ.Stringer,
+			Value: op.And{
+				op.Optional(
+					Minus,
+				),
+				Int,
+				op.Optional(
+					Frac,
+				),
+				op.Optional(
+					Exp,
+				),
+			},
+		},
+	)
+}
+
+func Sign(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(
+		ast.Capture{
+			Type:        typ.Sign,
+			TypeStrings: typ.Stringer,
+			Value: op.Or{
+				"-",
+				"+",
 			},
 		},
 	)
