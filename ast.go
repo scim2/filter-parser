@@ -4,12 +4,6 @@ import (
 	"fmt"
 )
 
-// CompareOperator represents a compare operation.
-type CompareOperator string
-
-// LogicalOperator represents a logical operation such as 'and' / 'or'.
-type LogicalOperator string
-
 const (
 	// PR is an abbreviation for 'present'.
 	PR CompareOperator = "pr"
@@ -38,21 +32,6 @@ const (
 	OR LogicalOperator = "or"
 )
 
-// Expression is a type to assign to implemented expressions.
-// Valid expressions are:
-//	- ValuePath
-//	- AttributeExpression
-//	- LogicalExpression
-// 	- NotExpression
-type Expression interface {
-	exprNode()
-}
-
-func (*ValuePath) exprNode()           {}
-func (*AttributeExpression) exprNode() {}
-func (*LogicalExpression) exprNode()   {}
-func (*NotExpression) exprNode()       {}
-
 // AttributeExpression represents an attribute expression/filter.
 type AttributeExpression struct {
 	AttributePath AttributePath
@@ -73,34 +52,7 @@ func (e AttributeExpression) String() string {
 	return s
 }
 
-// LogicalExpression represents an 'and' / 'or' node.
-type LogicalExpression struct {
-	Left, Right Expression
-	Operator    LogicalOperator
-}
-
-func (e LogicalExpression) String() string {
-	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
-}
-
-// ValuePath represents a filter on a attribute path.
-type ValuePath struct {
-	AttributePath AttributePath
-	ValueFilter   Expression
-}
-
-func (e ValuePath) String() string {
-	return fmt.Sprintf("%v[%v]", e.AttributePath, e.ValueFilter)
-}
-
-// NotExpression represents an 'not' node.
-type NotExpression struct {
-	Expression Expression
-}
-
-func (e NotExpression) String() string {
-	return fmt.Sprintf("not(%v)", e.Expression)
-}
+func (*AttributeExpression) exprNode() {}
 
 // AttributePath represents an attribute path. Both URIPrefix and SubAttr are
 // optional values and can be nil.
@@ -113,7 +65,6 @@ type AttributePath struct {
 	AttributeName string
 	SubAttribute  *string
 }
-
 func (p AttributePath) String() string {
 	s := p.AttributeName
 	if p.URIPrefix != nil {
@@ -124,7 +75,14 @@ func (p AttributePath) String() string {
 	}
 	return s
 }
-
+// SubAttributeName returns the sub attribute name if present.
+// Returns an empty string otherwise.
+func (p *AttributePath) SubAttributeName() string {
+	if p.SubAttribute != nil {
+		return *p.SubAttribute
+	}
+	return ""
+}
 // URI returns the URI if present.
 // Returns an empty string otherwise.
 func (p *AttributePath) URI() string {
@@ -134,14 +92,44 @@ func (p *AttributePath) URI() string {
 	return ""
 }
 
-// SubAttributeName returns the sub attribute name if present.
-// Returns an empty string otherwise.
-func (p *AttributePath) SubAttributeName() string {
-	if p.SubAttribute != nil {
-		return *p.SubAttribute
-	}
-	return ""
+// CompareOperator represents a compare operation.
+type CompareOperator string
+
+// Expression is a type to assign to implemented expressions.
+// Valid expressions are:
+//	- ValuePath
+//	- AttributeExpression
+//	- LogicalExpression
+// 	- NotExpression
+type Expression interface {
+	exprNode()
 }
+
+// LogicalExpression represents an 'and' / 'or' node.
+type LogicalExpression struct {
+	Left, Right Expression
+	Operator    LogicalOperator
+}
+
+func (e LogicalExpression) String() string {
+	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
+}
+
+func (*LogicalExpression) exprNode()   {}
+
+// LogicalOperator represents a logical operation such as 'and' / 'or'.
+type LogicalOperator string
+
+// NotExpression represents an 'not' node.
+type NotExpression struct {
+	Expression Expression
+}
+
+func (e NotExpression) String() string {
+	return fmt.Sprintf("not(%v)", e.Expression)
+}
+
+func (*NotExpression) exprNode()       {}
 
 // Path describes the target of a PATCH operation. Path can have an optional
 // ValueExpression and SubAttribute.
@@ -174,3 +162,15 @@ func (p *Path) SubAttributeName() string {
 	}
 	return ""
 }
+
+// ValuePath represents a filter on a attribute path.
+type ValuePath struct {
+	AttributePath AttributePath
+	ValueFilter   Expression
+}
+
+func (e ValuePath) String() string {
+	return fmt.Sprintf("%v[%v]", e.AttributePath, e.ValueFilter)
+}
+
+func (*ValuePath) exprNode()           {}

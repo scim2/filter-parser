@@ -11,22 +11,6 @@ func Filter(p *ast.Parser) (*ast.Node, error) {
 	return FilterOr(p)
 }
 
-func FilterOr(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(ast.Capture{
-		Type:        typ.FilterOr,
-		TypeStrings: typ.Stringer,
-		Value: op.And{
-			FilterAnd,
-			op.MinZero(op.And{
-				op.MinOne(SP),
-				parser.CheckStringCI("or"),
-				op.MinOne(SP),
-				FilterAnd,
-			}),
-		},
-	})
-}
-
 func FilterAnd(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
 		Type:        typ.FilterAnd,
@@ -55,12 +39,19 @@ func FilterNot(p *ast.Parser) (*ast.Node, error) {
 	})
 }
 
-func FilterValue(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.Or{
-		ValuePath,
-		AttrExp,
-		FilterNot,
-		FilterParentheses,
+func FilterOr(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(ast.Capture{
+		Type:        typ.FilterOr,
+		TypeStrings: typ.Stringer,
+		Value: op.And{
+			FilterAnd,
+			op.MinZero(op.And{
+				op.MinOne(SP),
+				parser.CheckStringCI("or"),
+				op.MinOne(SP),
+				FilterAnd,
+			}),
+		},
 	})
 }
 
@@ -71,5 +62,14 @@ func FilterParentheses(p *ast.Parser) (*ast.Node, error) {
 		FilterOr,
 		op.MinZero(SP),
 		')',
+	})
+}
+
+func FilterValue(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(op.Or{
+		ValuePath,
+		AttrExp,
+		FilterNot,
+		FilterParentheses,
 	})
 }

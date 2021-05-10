@@ -26,18 +26,6 @@ func AttrExp(p *ast.Parser) (*ast.Node, error) {
 	})
 }
 
-func AttrPath(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(ast.Capture{
-		Type:        typ.AttrPath,
-		TypeStrings: typ.Stringer,
-		Value: op.And{
-			op.Optional(URI),
-			AttrName,
-			op.Optional(SubAttr),
-		},
-	})
-}
-
 func AttrName(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
 		Type:        typ.AttrName,
@@ -50,12 +38,16 @@ func AttrName(p *ast.Parser) (*ast.Node, error) {
 	})
 }
 
-func NameChar(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.Or{'-', '_', Digit, Alpha})
-}
-
-func SubAttr(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.And{'.', AttrName})
+func AttrPath(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(ast.Capture{
+		Type:        typ.AttrPath,
+		TypeStrings: typ.Stringer,
+		Value: op.And{
+			op.Optional(URI),
+			AttrName,
+			op.Optional(SubAttr),
+		},
+	})
 }
 
 func CompareOp(p *ast.Parser) (*ast.Node, error) {
@@ -78,4 +70,12 @@ func CompareOp(p *ast.Parser) (*ast.Node, error) {
 
 func CompareValue(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(op.Or{False, Null, True, Number, String})
+}
+
+func NameChar(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(op.Or{'-', '_', Digit, Alpha})
+}
+
+func SubAttr(p *ast.Parser) (*ast.Node, error) {
+	return p.Expect(op.And{'.', AttrName})
 }

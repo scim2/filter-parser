@@ -10,6 +10,53 @@ import (
 	"strings"
 )
 
+func parseNumber(node *ast.Node) (interface{}, error) {
+	var frac, exp bool
+	var nStr string
+	for _, node := range node.Children() {
+		switch t := node.Type; t {
+		case typ.Minus:
+			nStr = "-"
+		case typ.Int:
+			nStr += node.Value
+		case typ.Frac:
+			frac = true
+			children := node.Children()
+			if l := len(children); l != 1 {
+				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
+			}
+			nStr += fmt.Sprintf(".%s", children[0].Value)
+		case typ.Exp:
+			exp = true
+			nStr += "e"
+			for _, node := range node.Children() {
+				switch t := node.Type; t {
+				case typ.Sign, typ.Digits:
+					nStr += node.Value
+				default:
+					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
+
+				}
+			}
+		default:
+			return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
+		}
+	}
+	f, err := strconv.ParseFloat(nStr, 64)
+	if err != nil {
+		return AttributeExpression{}, &internalError{
+			Message: err.Error(),
+		}
+	}
+
+	// Integers can not contain fractional or exponent parts.
+	// More info: https://tools.ietf.org/html/rfc7643#section-2.3.4
+	if !frac && !exp {
+		return int(f), nil
+	}
+	return f, err
+}
+
 // ParseAttrExp parses the given raw data as an AttributeExpression.
 func ParseAttrExp(raw []byte) (AttributeExpression, error) {
 	p, err := ast.New(raw)
@@ -84,51 +131,4 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 		Operator:      compareOp,
 		CompareValue:  compareValue,
 	}, nil
-}
-
-func parseNumber(node *ast.Node) (interface{}, error) {
-	var frac, exp bool
-	var nStr string
-	for _, node := range node.Children() {
-		switch t := node.Type; t {
-		case typ.Minus:
-			nStr = "-"
-		case typ.Int:
-			nStr += node.Value
-		case typ.Frac:
-			frac = true
-			children := node.Children()
-			if l := len(children); l != 1 {
-				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
-			}
-			nStr += fmt.Sprintf(".%s", children[0].Value)
-		case typ.Exp:
-			exp = true
-			nStr += "e"
-			for _, node := range node.Children() {
-				switch t := node.Type; t {
-				case typ.Sign, typ.Digits:
-					nStr += node.Value
-				default:
-					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
-
-				}
-			}
-		default:
-			return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
-		}
-	}
-	f, err := strconv.ParseFloat(nStr, 64)
-	if err != nil {
-		return AttributeExpression{}, &internalError{
-			Message: err.Error(),
-		}
-	}
-
-	// Integers can not contain fractional or exponent parts.
-	// More info: https://tools.ietf.org/html/rfc7643#section-2.3.4
-	if !frac && !exp {
-		return int(f), nil
-	}
-	return f, err
 }
