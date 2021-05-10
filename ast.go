@@ -65,6 +65,7 @@ type AttributePath struct {
 	AttributeName string
 	SubAttribute  *string
 }
+
 func (p AttributePath) String() string {
 	s := p.AttributeName
 	if p.URIPrefix != nil {
@@ -75,6 +76,7 @@ func (p AttributePath) String() string {
 	}
 	return s
 }
+
 // SubAttributeName returns the sub attribute name if present.
 // Returns an empty string otherwise.
 func (p *AttributePath) SubAttributeName() string {
@@ -83,6 +85,7 @@ func (p *AttributePath) SubAttributeName() string {
 	}
 	return ""
 }
+
 // URI returns the URI if present.
 // Returns an empty string otherwise.
 func (p *AttributePath) URI() string {
@@ -115,7 +118,7 @@ func (e LogicalExpression) String() string {
 	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
 }
 
-func (*LogicalExpression) exprNode()   {}
+func (*LogicalExpression) exprNode() {}
 
 // LogicalOperator represents a logical operation such as 'and' / 'or'.
 type LogicalOperator string
@@ -129,7 +132,7 @@ func (e NotExpression) String() string {
 	return fmt.Sprintf("not(%v)", e.Expression)
 }
 
-func (*NotExpression) exprNode()       {}
+func (*NotExpression) exprNode() {}
 
 // Path describes the target of a PATCH operation. Path can have an optional
 // ValueExpression and SubAttribute.
@@ -173,4 +176,4 @@ func (e ValuePath) String() string {
 	return fmt.Sprintf("%v[%v]", e.AttributePath, e.ValueFilter)
 }
 
-func (*ValuePath) exprNode()           {}
+func (*ValuePath) exprNode() {}

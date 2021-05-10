@@ -121,7 +121,6 @@ func (p config) parseNumber(node *ast.Node) (interface{}, error) {
 					nStr += node.Value
 				default:
 					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
-
 				}
 			}
 		default:
