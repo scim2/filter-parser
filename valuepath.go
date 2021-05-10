@@ -32,32 +32,6 @@ func parseValuePath(raw []byte, c config) (ValuePath, error) {
 	return c.parseValuePath(node)
 }
 
-func (p config) parseValuePath(node *ast.Node) (ValuePath, error) {
-	if node.Type != typ.ValuePath {
-		return ValuePath{}, invalidTypeError(typ.ValuePath, node.Type)
-	}
-
-	children := node.Children()
-	if l := len(children); l != 2 {
-		return ValuePath{}, invalidLengthError(typ.ValuePath, 2, l)
-	}
-
-	attrPath, err := parseAttrPath(children[0])
-	if err != nil {
-		return ValuePath{}, err
-	}
-
-	valueFilter, err := p.parseValueFilter(children[1])
-	if err != nil {
-		return ValuePath{}, err
-	}
-
-	return ValuePath{
-		AttributePath: attrPath,
-		ValueFilter:   valueFilter,
-	}, nil
-}
-
 func (p config) parseValueFilter(node *ast.Node) (Expression, error) {
 	switch t := node.Type; t {
 	case typ.ValueLogExpOr, typ.ValueLogExpAnd:
@@ -109,4 +83,30 @@ func (p config) parseValueFilter(node *ast.Node) (Expression, error) {
 	default:
 		return nil, invalidChildTypeError(typ.ValuePath, t)
 	}
+}
+
+func (p config) parseValuePath(node *ast.Node) (ValuePath, error) {
+	if node.Type != typ.ValuePath {
+		return ValuePath{}, invalidTypeError(typ.ValuePath, node.Type)
+	}
+
+	children := node.Children()
+	if l := len(children); l != 2 {
+		return ValuePath{}, invalidLengthError(typ.ValuePath, 2, l)
+	}
+
+	attrPath, err := parseAttrPath(children[0])
+	if err != nil {
+		return ValuePath{}, err
+	}
+
+	valueFilter, err := p.parseValueFilter(children[1])
+	if err != nil {
+		return ValuePath{}, err
+	}
+
+	return ValuePath{
+		AttributePath: attrPath,
+		ValueFilter:   valueFilter,
+	}, nil
 }
