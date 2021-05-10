@@ -9,6 +9,15 @@ import (
 
 // ParsePath parses the given raw data as an Path.
 func ParsePath(raw []byte) (Path, error) {
+	return parsePath(raw, config{})
+}
+
+// ParsePathNumber parses the given raw data as an Path with json.Number.
+func ParsePathNumber(raw []byte) (Path, error) {
+	return parsePath(raw, config{useNumber: true})
+}
+
+func parsePath(raw []byte, c config) (Path, error) {
 	p, err := ast.New(raw)
 	if err != nil {
 		return Path{}, err
@@ -20,10 +29,10 @@ func ParsePath(raw []byte) (Path, error) {
 	if _, err := p.Expect(parser.EOD); err != nil {
 		return Path{}, err
 	}
-	return parsePath(node)
+	return c.parsePath(node)
 }
 
-func parsePath(node *ast.Node) (Path, error) {
+func (p config) parsePath(node *ast.Node) (Path, error) {
 	children := node.Children()
 	if len(children) == 0 {
 		return Path{}, invalidLengthError(typ.Path, 1, 0)
@@ -45,7 +54,7 @@ func parsePath(node *ast.Node) (Path, error) {
 	}
 
 	// ValuePath SubAttr?
-	valuePath, err := parseValuePath(children[0])
+	valuePath, err := p.parseValuePath(children[0])
 	if err != nil {
 		return Path{}, err
 	}
