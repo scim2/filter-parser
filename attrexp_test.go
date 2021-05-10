@@ -77,6 +77,29 @@ func TestParseNumber(t *testing.T) {
 					t.Error(number, i)
 				}
 			}
+			{ // Config with useNumber = true.
+				d := json.NewDecoder(strings.NewReader(test.nStr))
+				d.UseNumber()
+				var number json.Number
+				if err := d.Decode(&number); err != nil {
+					t.Error(err)
+				}
+
+				i, err := config{
+					useNumber: true,
+				}.parseNumber(n)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if i != json.Number(test.nStr) {
+					t.Error(test.nStr, i)
+				}
+
+				// Check if equal to json.Decode.
+				if i != number {
+					t.Error(number, i)
+				}
+			}
 		})
 	}
 }

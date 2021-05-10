@@ -32,47 +32,6 @@ func parseFilter(raw []byte, c config) (Expression, error) {
 	return c.parseFilterOr(node)
 }
 
-func (p config) parseFilterOr(node *ast.Node) (Expression, error) {
-	if node.Type != typ.FilterOr {
-		return nil, invalidTypeError(typ.FilterOr, node.Type)
-	}
-
-	children := node.Children()
-	if len(children) == 0 {
-		return nil, invalidLengthError(typ.FilterOr, 1, 0)
-	}
-
-	if len(children) == 1 {
-		return p.parseFilterAnd(children[0])
-	}
-
-	var or LogicalExpression
-	for _, node := range children {
-		exp, err := p.parseFilterAnd(node)
-		if err != nil {
-			return nil, err
-		}
-		switch {
-		case or.Left == nil:
-			or.Left = exp
-		case or.Right == nil:
-			or.Right = exp
-			or.Operator = OR
-		default:
-			or = LogicalExpression{
-				Left: &LogicalExpression{
-					Left:     or.Left,
-					Right:    or.Right,
-					Operator: OR,
-				},
-				Right:    exp,
-				Operator: OR,
-			}
-		}
-	}
-	return &or, nil
-}
-
 func (p config) parseFilterAnd(node *ast.Node) (Expression, error) {
 	if node.Type != typ.FilterAnd {
 		return nil, invalidTypeError(typ.FilterAnd, node.Type)
@@ -112,6 +71,47 @@ func (p config) parseFilterAnd(node *ast.Node) (Expression, error) {
 		}
 	}
 	return &and, nil
+}
+
+func (p config) parseFilterOr(node *ast.Node) (Expression, error) {
+	if node.Type != typ.FilterOr {
+		return nil, invalidTypeError(typ.FilterOr, node.Type)
+	}
+
+	children := node.Children()
+	if len(children) == 0 {
+		return nil, invalidLengthError(typ.FilterOr, 1, 0)
+	}
+
+	if len(children) == 1 {
+		return p.parseFilterAnd(children[0])
+	}
+
+	var or LogicalExpression
+	for _, node := range children {
+		exp, err := p.parseFilterAnd(node)
+		if err != nil {
+			return nil, err
+		}
+		switch {
+		case or.Left == nil:
+			or.Left = exp
+		case or.Right == nil:
+			or.Right = exp
+			or.Operator = OR
+		default:
+			or = LogicalExpression{
+				Left: &LogicalExpression{
+					Left:     or.Left,
+					Right:    or.Right,
+					Operator: OR,
+				},
+				Right:    exp,
+				Operator: OR,
+			}
+		}
+	}
+	return &or, nil
 }
 
 func (p config) parseFilterValue(node *ast.Node) (Expression, error) {
