@@ -1,9 +1,11 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/v2/internal/grammar"
+	"strings"
 	"testing"
 )
 
@@ -41,16 +43,39 @@ func TestParseNumber(t *testing.T) {
 			p, _ := ast.New([]byte(test.nStr))
 			n, err := grammar.Number(p)
 			if err != nil {
-				t.Error(err)
-				return
+				t.Fatal(err)
 			}
-			i, err := parseNumber(n)
-			if err != nil {
-				t.Error(err)
-				return
+			{ // Empty config.
+				i, err := config{}.parseNumber(n)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if i != test.expected {
+					t.Error(test.expected, i)
+				}
 			}
-			if i != test.expected {
-				t.Error(test.expected, i)
+			{ // Config with useNumber = true.
+				d := json.NewDecoder(strings.NewReader(test.nStr))
+				d.UseNumber()
+				var number json.Number
+				if err := d.Decode(&number); err != nil {
+					t.Error(err)
+				}
+
+				i, err := config{
+					useNumber: true,
+				}.parseNumber(n)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if i != json.Number(test.nStr) {
+					t.Error(test.nStr, i)
+				}
+
+				// Check if equal to json.Decode.
+				if i != number {
+					t.Error(number, i)
+				}
 			}
 		})
 	}

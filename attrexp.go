@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
@@ -10,55 +11,17 @@ import (
 	"strings"
 )
 
-func parseNumber(node *ast.Node) (interface{}, error) {
-	var frac, exp bool
-	var nStr string
-	for _, node := range node.Children() {
-		switch t := node.Type; t {
-		case typ.Minus:
-			nStr = "-"
-		case typ.Int:
-			nStr += node.Value
-		case typ.Frac:
-			frac = true
-			children := node.Children()
-			if l := len(children); l != 1 {
-				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
-			}
-			nStr += fmt.Sprintf(".%s", children[0].Value)
-		case typ.Exp:
-			exp = true
-			nStr += "e"
-			for _, node := range node.Children() {
-				switch t := node.Type; t {
-				case typ.Sign, typ.Digits:
-					nStr += node.Value
-				default:
-					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
-
-				}
-			}
-		default:
-			return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
-		}
-	}
-	f, err := strconv.ParseFloat(nStr, 64)
-	if err != nil {
-		return AttributeExpression{}, &internalError{
-			Message: err.Error(),
-		}
-	}
-
-	// Integers can not contain fractional or exponent parts.
-	// More info: https://tools.ietf.org/html/rfc7643#section-2.3.4
-	if !frac && !exp {
-		return int(f), nil
-	}
-	return f, err
-}
-
 // ParseAttrExp parses the given raw data as an AttributeExpression.
 func ParseAttrExp(raw []byte) (AttributeExpression, error) {
+	return parseAttrExp(raw, config{})
+}
+
+// ParseAttrExpNumber parses the given raw data as an AttributeExpression with json.Number.
+func ParseAttrExpNumber(raw []byte) (AttributeExpression, error) {
+	return parseAttrExp(raw, config{useNumber: true})
+}
+
+func parseAttrExp(raw []byte, c config) (AttributeExpression, error) {
 	p, err := ast.New(raw)
 	if err != nil {
 		return AttributeExpression{}, err
@@ -70,10 +33,10 @@ func ParseAttrExp(raw []byte) (AttributeExpression, error) {
 	if _, err := p.Expect(parser.EOD); err != nil {
 		return AttributeExpression{}, err
 	}
-	return parseAttrExp(node)
+	return c.parseAttrExp(node)
 }
 
-func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
+func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 	if node.Type != typ.AttrExp {
 		return AttributeExpression{}, invalidTypeError(typ.AttrExp, node.Type)
 	}
@@ -112,7 +75,7 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 	case typ.True:
 		compareValue = true
 	case typ.Number:
-		value, err := parseNumber(node)
+		value, err := p.parseNumber(node)
 		if err != nil {
 			return AttributeExpression{}, err
 		}
@@ -131,4 +94,56 @@ func parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 		Operator:      compareOp,
 		CompareValue:  compareValue,
 	}, nil
+}
+
+func (p config) parseNumber(node *ast.Node) (interface{}, error) {
+	var frac, exp bool
+	var nStr string
+	for _, node := range node.Children() {
+		switch t := node.Type; t {
+		case typ.Minus:
+			nStr = "-"
+		case typ.Int:
+			nStr += node.Value
+		case typ.Frac:
+			frac = true
+			children := node.Children()
+			if l := len(children); l != 1 {
+				return AttributeExpression{}, invalidLengthError(typ.Frac, 1, l)
+			}
+			nStr += fmt.Sprintf(".%s", children[0].Value)
+		case typ.Exp:
+			exp = true
+			nStr += "e"
+			for _, node := range node.Children() {
+				switch t := node.Type; t {
+				case typ.Sign, typ.Digits:
+					nStr += node.Value
+				default:
+					return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
+
+				}
+			}
+		default:
+			return AttributeExpression{}, invalidChildTypeError(typ.Number, node.Type)
+		}
+	}
+
+	if p.useNumber {
+		return json.Number(nStr), nil
+	}
+
+	f, err := strconv.ParseFloat(nStr, 64)
+	if err != nil {
+		return AttributeExpression{}, &internalError{
+			Message: err.Error(),
+		}
+	}
+
+	// Integers can not contain fractional or exponent parts.
+	// More info: https://tools.ietf.org/html/rfc7643#section-2.3.4
+	if !frac && !exp {
+		return int(f), nil
+	}
+	return f, err
 }
