@@ -141,6 +141,19 @@ func (p config) parseFilterValue(node *ast.Node) (Expression, error) {
 		return &NotExpression{
 			Expression: exp,
 		}, nil
+	case typ.FilterPrecedence:
+		children := node.Children()
+		if l := len(children); l != 1 {
+			return nil, invalidLengthError(typ.FilterPrecedence, 1, l)
+		}
+
+		exp, err := p.parseFilterOr(children[0])
+		if err != nil {
+			return nil, err
+		}
+		return &PrecedenceExpression{
+			Expression: exp,
+		}, nil
 	case typ.FilterOr:
 		return p.parseFilterOr(node)
 	default:
