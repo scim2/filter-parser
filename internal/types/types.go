@@ -6,6 +6,7 @@ const (
 	FilterOr
 	FilterAnd
 	FilterNot
+	FilterPrecedence
 
 	Path
 
@@ -42,6 +43,7 @@ var Stringer = []string{
 	"FilterOr",
 	"FilterAnd",
 	"FilterNot",
+	"FilterPrecedence",
 
 	"Path",
 

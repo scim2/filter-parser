@@ -2,13 +2,16 @@ package filter
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
 func ExampleParseFilter_and() {
-	fmt.Println(ParseFilter([]byte("title pr and userType eq \"Employee\"")))
+	ast, _ := ParseFilter([]byte("title pr and userType eq \"Employee\""))
+
+	fmt.Println(ast)
 	// Output:
-	// title pr and userType eq "Employee" <nil>
+	// title pr and userType eq "Employee"
 }
 
 func ExampleParseFilter_attrExp() {
@@ -38,7 +41,7 @@ func ExampleParseFilter_or() {
 func ExampleParseFilter_parentheses() {
 	fmt.Println(ParseFilter([]byte("(emails.type eq \"work\")")))
 	// Output:
-	// emails.type eq "work" <nil>
+	// (emails.type eq "work") <nil>
 }
 
 func ExampleParseFilter_valuePath() {
@@ -99,7 +102,13 @@ func TestParseFilter(t *testing.T) {
 		"name pr or userName pr or title pr",
 	} {
 		t.Run(example, func(t *testing.T) {
-			if _, err := ParseFilter([]byte(example)); err != nil {
+
+			if strings.HasPrefix(example, "userType") {
+				fmt.Println("Test:" + example)
+			}
+			ast, err := ParseFilter([]byte(example))
+			fmt.Println(ast)
+			if err != nil {
 				t.Error(err)
 			}
 		})

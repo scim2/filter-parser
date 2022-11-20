@@ -47,6 +47,6 @@ func ExampleFilterParentheses() {
 	p("userType eq \"Employee\" and (emails.type eq \"work\")")
 	p("userType eq \"Employee\" and (emails co \"example.com\" or emails.value co \"example.org\")")
 	// Output:
-	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","type"]]],["CompareOp","eq"],["String","\"work\""]]]]]]]]]]] <nil>
-	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"]]],["CompareOp","co"],["String","\"example.com\""]]]]],["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","value"]]],["CompareOp","co"],["String","\"example.org\""]]]]]]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterPrecedence",[["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","type"]]],["CompareOp","eq"],["String","\"work\""]]]]]]]]]]]]] <nil>
+	// ["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","userType"]]],["CompareOp","eq"],["String","\"Employee\""]]],["FilterPrecedence",[["FilterOr",[["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"]]],["CompareOp","co"],["String","\"example.com\""]]]]],["FilterAnd",[["AttrExp",[["AttrPath",[["AttrName","emails"],["AttrName","value"]]],["CompareOp","co"],["String","\"example.org\""]]]]]]]]]]]]] <nil>
 }
