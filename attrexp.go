@@ -83,7 +83,9 @@ func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 	case typ.String:
 		str := node.Value
 		str = strings.TrimPrefix(str, "\"")
+		str = strings.TrimPrefix(str, "'")
 		str = strings.TrimSuffix(str, "\"")
+		str = strings.TrimSuffix(str, "'")
 		compareValue = str
 	default:
 		return AttributeExpression{}, invalidChildTypeError(typ.AttrExp, node.Type)

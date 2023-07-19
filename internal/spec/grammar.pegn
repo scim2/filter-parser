@@ -56,7 +56,7 @@ Digits   <-- [0-9]+
 Frac     <-- '.' Digits
 Int      <-- '0' / [1-9] [0-9]*
 
-String    <-- '"' Character* '"'
+String    <-- '"' Character* '"' / "'" Character* "'"
 Character  <- Unescaped / '\' Escaped
 Unescaped  <- [x20-x21] / [x23-x5B] / [x5D-x10FFFF]
 Escaped    <- '"'
