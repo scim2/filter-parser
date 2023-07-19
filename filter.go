@@ -3,18 +3,32 @@ package filter
 import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
+
 	"github.com/scim2/filter-parser/v2/internal/grammar"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // ParseFilter parses the given raw data as an Expression.
-func ParseFilter(raw []byte) (Expression, error) {
-	return parseFilter(raw, config{})
+func ParseFilter(raw []byte, options ...configOption) (Expression, error) {
+	p, err := ast.New(raw)
+	if err != nil {
+		return nil, err
+	}
+	node, err := grammar.Filter(p)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := p.Expect(parser.EOD); err != nil {
+		return nil, err
+	}
+	return getConfig(options...).parseFilterOr(node)
 }
 
 // ParseFilterNumber parses the given raw data as an Expression with json.Number.
+//
+// Deprecated - use ParseFilter WithUseNumber option
 func ParseFilterNumber(raw []byte) (Expression, error) {
-	return parseFilter(raw, config{useNumber: true})
+	return ParseFilter(raw, WithUseNumber())
 }
 
 func parseFilter(raw []byte, c config) (Expression, error) {

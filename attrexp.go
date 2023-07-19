@@ -3,25 +3,18 @@ package filter
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/ast"
-	"github.com/scim2/filter-parser/v2/internal/grammar"
-	"github.com/scim2/filter-parser/v2/internal/types"
 	"strconv"
 	"strings"
+
+	"github.com/di-wu/parser"
+	"github.com/di-wu/parser/ast"
+
+	"github.com/scim2/filter-parser/v2/internal/grammar"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // ParseAttrExp parses the given raw data as an AttributeExpression.
-func ParseAttrExp(raw []byte) (AttributeExpression, error) {
-	return parseAttrExp(raw, config{})
-}
-
-// ParseAttrExpNumber parses the given raw data as an AttributeExpression with json.Number.
-func ParseAttrExpNumber(raw []byte) (AttributeExpression, error) {
-	return parseAttrExp(raw, config{useNumber: true})
-}
-
-func parseAttrExp(raw []byte, c config) (AttributeExpression, error) {
+func ParseAttrExp(raw []byte, options ...configOption) (AttributeExpression, error) {
 	p, err := ast.New(raw)
 	if err != nil {
 		return AttributeExpression{}, err
@@ -33,7 +26,14 @@ func parseAttrExp(raw []byte, c config) (AttributeExpression, error) {
 	if _, err := p.Expect(parser.EOD); err != nil {
 		return AttributeExpression{}, err
 	}
-	return c.parseAttrExp(node)
+	return getConfig(options...).parseAttrExp(node)
+}
+
+// ParseAttrExpNumber parses the given raw data as an AttributeExpression with json.Number.
+//
+// Deprecated - use ParseAttrExpNumber WithUseNumber option
+func ParseAttrExpNumber(raw []byte) (AttributeExpression, error) {
+	return ParseAttrExp(raw, WithUseNumber())
 }
 
 func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
