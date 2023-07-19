@@ -25,7 +25,7 @@ ValueLogExpAnd <-- AttrExp SP* And SP* AttrExp
 ValueFilterNot <-- Not SP* '(' SP* ValueFilter SP* ')'
 
 Not   <- ('n' / 'N') ('o' / 'O') / ('t' / 'T')
-Or    <- ('o' / 'R') ('r' / 'R')
+Or    <- ('o' / 'O') ('r' / 'R')
 And   <- ('a' / 'A') ('n' / 'N') ('d' / 'D')
 
 Pr    <- ('p' / 'P') ('r' / 'R')
