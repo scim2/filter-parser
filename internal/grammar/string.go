@@ -26,6 +26,17 @@ func (q quote) getValue() string {
 	}
 }
 
+func (q quote) getType() int {
+	switch q {
+	case singleQuote:
+		return typ.StringWithSingleQuotes
+	case doubleQuote:
+		fallthrough
+	default:
+		return typ.StringWithDoubleQuotes
+	}
+}
+
 func Character(q quote) func(*ast.Parser) (*ast.Node, error) {
 	return func(p *ast.Parser) (*ast.Node, error) {
 		return p.Expect(
@@ -71,7 +82,7 @@ func String(q quote) func(*ast.Parser) (*ast.Node, error) {
 	return func(p *ast.Parser) (*ast.Node, error) {
 		return p.Expect(
 			ast.Capture{
-				Type:        typ.String,
+				Type:        q.getType(),
 				TypeStrings: typ.Stringer,
 				Value: op.And{
 					q.getValue(),

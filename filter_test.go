@@ -42,13 +42,13 @@ func ExampleParseFilter_parentheses() {
 }
 
 func ExampleParseFilter_valuePath() {
-	fmt.Println(ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"]")))
+	fmt.Println(ParseFilter([]byte("emails[type eq \"work\" and value co '@example.com']")))
 	// Output:
 	// emails[type eq "work" and value co "@example.com"] <nil>
 }
 
 func Example_walk() {
-	expression, _ := ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co \"@foo.com\"]"))
+	expression, _ := ParseFilter([]byte("emails[type eq \"work\" and value co \"@example.com\"] or ims[type eq \"xmpp\" and value co '@foo.com']"))
 	var walk func(e Expression) error
 	walk = func(e Expression) error {
 		switch v := e.(type) {

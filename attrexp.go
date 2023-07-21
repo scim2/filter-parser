@@ -80,11 +80,14 @@ func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 			return AttributeExpression{}, err
 		}
 		compareValue = value
-	case typ.String:
+	case typ.StringWithDoubleQuotes:
 		str := node.Value
 		str = strings.TrimPrefix(str, "\"")
-		str = strings.TrimPrefix(str, "'")
 		str = strings.TrimSuffix(str, "\"")
+		compareValue = str
+	case typ.StringWithSingleQuotes:
+		str := node.Value
+		str = strings.TrimPrefix(str, "'")
 		str = strings.TrimSuffix(str, "'")
 		compareValue = str
 	default:
