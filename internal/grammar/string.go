@@ -4,25 +4,60 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"github.com/scim2/filter-parser/v2/internal/types"
+
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
-func Character(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		op.Or{
-			Unescaped,
-			op.And{
-				"\\",
-				Escaped,
+type quote int
+
+const (
+	singleQuote quote = iota
+	doubleQuote
+)
+
+func (q quote) getValue() string {
+	switch q {
+	case singleQuote:
+		return "'"
+	case doubleQuote:
+		fallthrough
+	default:
+		return "\""
+	}
+}
+
+func (q quote) getType() int {
+	switch q {
+	case singleQuote:
+		return typ.StringWithSingleQuotes
+	case doubleQuote:
+		fallthrough
+	default:
+		return typ.StringWithDoubleQuotes
+	}
+}
+
+func Character(q quote) func(*ast.Parser) (*ast.Node, error) {
+	return func(p *ast.Parser) (*ast.Node, error) {
+		return p.Expect(
+			op.Or{
+				Unescaped(q),
+				op.And{
+					"\\",
+					q.getValue(),
+				},
+				op.And{
+					"\\",
+					Escaped,
+				},
 			},
-		},
-	)
+		)
+	}
 }
 
 func Escaped(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(
 		op.Or{
-			"\"",
 			"\\",
 			"/",
 			0x0062,
@@ -43,28 +78,49 @@ func Escaped(p *ast.Parser) (*ast.Node, error) {
 	)
 }
 
-func String(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		ast.Capture{
-			Type:        typ.String,
-			TypeStrings: typ.Stringer,
-			Value: op.And{
-				"\"",
-				op.MinZero(
-					Character,
-				),
-				"\"",
+func String(q quote) func(*ast.Parser) (*ast.Node, error) {
+	return func(p *ast.Parser) (*ast.Node, error) {
+		return p.Expect(
+			ast.Capture{
+				Type:        q.getType(),
+				TypeStrings: typ.Stringer,
+				Value: op.And{
+					q.getValue(),
+					op.MinZero(
+						Character(q),
+					),
+					q.getValue(),
+				},
 			},
-		},
-	)
+		)
+	}
 }
 
-func Unescaped(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(
-		op.Or{
-			parser.CheckRuneRange(0x0020, 0x0021),
-			parser.CheckRuneRange(0x0023, 0x005B),
-			parser.CheckRuneRange(0x005D, 0x0010FFFF),
-		},
-	)
+func Unescaped(q quote) func(*ast.Parser) (*ast.Node, error) {
+	switch q {
+	case singleQuote:
+		return func(p *ast.Parser) (*ast.Node, error) {
+			// 0x0027 : '
+			return p.Expect(
+				op.Or{
+					parser.CheckRuneRange(0x0020, 0x0026),
+					parser.CheckRuneRange(0x0028, 0x0010FFFF),
+				},
+			)
+		}
+	case doubleQuote:
+		fallthrough
+	default:
+		return func(p *ast.Parser) (*ast.Node, error) {
+			// 0x0023 : "
+			// 0x005C : \
+			return p.Expect(
+				op.Or{
+					parser.CheckRuneRange(0x0020, 0x0021),
+					parser.CheckRuneRange(0x0023, 0x005B),
+					parser.CheckRuneRange(0x005D, 0x0010FFFF),
+				},
+			)
+		}
+	}
 }

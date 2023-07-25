@@ -3,21 +3,13 @@ package filter
 import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
+
 	"github.com/scim2/filter-parser/v2/internal/grammar"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // ParsePath parses the given raw data as an Path.
-func ParsePath(raw []byte) (Path, error) {
-	return parsePath(raw, config{})
-}
-
-// ParsePathNumber parses the given raw data as an Path with json.Number.
-func ParsePathNumber(raw []byte) (Path, error) {
-	return parsePath(raw, config{useNumber: true})
-}
-
-func parsePath(raw []byte, c config) (Path, error) {
+func ParsePath(raw []byte, options ...configOption) (Path, error) {
 	p, err := ast.New(raw)
 	if err != nil {
 		return Path{}, err
@@ -29,7 +21,14 @@ func parsePath(raw []byte, c config) (Path, error) {
 	if _, err := p.Expect(parser.EOD); err != nil {
 		return Path{}, err
 	}
-	return c.parsePath(node)
+	return getConfig(options...).parsePath(node)
+}
+
+// ParsePathNumber parses the given raw data as an Path with json.Number.
+//
+// Deprecated - use ParsePath WithUseNumber option
+func ParsePathNumber(raw []byte) (Path, error) {
+	return ParsePath(raw, WithUseNumber())
 }
 
 func (p config) parsePath(node *ast.Node) (Path, error) {

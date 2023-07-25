@@ -4,7 +4,8 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"github.com/scim2/filter-parser/v2/internal/types"
+
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 func AttrExp(p *ast.Parser) (*ast.Node, error) {
@@ -69,7 +70,7 @@ func CompareOp(p *ast.Parser) (*ast.Node, error) {
 }
 
 func CompareValue(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.Or{False, Null, True, Number, String})
+	return p.Expect(op.Or{False, Null, True, Number, String(doubleQuote), String(singleQuote)})
 }
 
 func NameChar(p *ast.Parser) (*ast.Node, error) {

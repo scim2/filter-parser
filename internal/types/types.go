@@ -31,7 +31,8 @@ const (
 	Frac
 	Int
 
-	String
+	StringWithDoubleQuotes
+	StringWithSingleQuotes
 
 	URI
 )
@@ -67,7 +68,8 @@ var Stringer = []string{
 	"Frac",
 	"Int",
 
-	"String",
+	"StringWithDoubleQuotes",
+	"StringWithSingleQuotes",
 
 	"URI",
 }
