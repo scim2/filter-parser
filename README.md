@@ -47,3 +47,4 @@ Filters MUST be evaluated using the following order of operations, in order of p
     2.  Attribute operators
     3.  Logical operators - where "not" takes precedence over "and",
         which takes precedence over "or"
+
