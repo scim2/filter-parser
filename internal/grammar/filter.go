@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/di-wu/parser/op"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 func Filter(p *ast.Parser) (*ast.Node, error) {
@@ -31,10 +31,21 @@ func FilterNot(p *ast.Parser) (*ast.Node, error) {
 	return p.Expect(ast.Capture{
 		Type:        typ.FilterNot,
 		TypeStrings: typ.Stringer,
-		Value: op.And{
-			parser.CheckStringCI("not"),
-			op.MinZero(SP),
-			FilterParentheses,
+		Value: op.Or{
+			op.And{
+				parser.CheckStringCI("not"),
+				op.MinZero(SP),
+				'(',
+				FilterOr,
+				op.MinZero(SP),
+				')',
+			},
+			op.And{
+				parser.CheckStringCI("not"),
+				op.MinZero(SP),
+				//	FilterValue,
+				FilterOr,
+			},
 		},
 	})
 }
@@ -56,12 +67,16 @@ func FilterOr(p *ast.Parser) (*ast.Node, error) {
 }
 
 func FilterParentheses(p *ast.Parser) (*ast.Node, error) {
-	return p.Expect(op.And{
-		'(',
-		op.MinZero(SP),
-		FilterOr,
-		op.MinZero(SP),
-		')',
+	return p.Expect(ast.Capture{
+		Type:        typ.FilterPrecedence,
+		TypeStrings: typ.Stringer,
+		Value: op.And{
+			'(',
+			op.MinZero(SP),
+			FilterOr,
+			op.MinZero(SP),
+			')',
+		},
 	})
 }
 

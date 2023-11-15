@@ -30,6 +30,8 @@ const (
 	AND LogicalOperator = "and"
 	// OR is the logical operation or (||).
 	OR LogicalOperator = "or"
+
+	OPEN LogicalOperator = "("
 )
 
 // AttributeExpression represents an attribute expression/filter.
@@ -57,9 +59,10 @@ func (*AttributeExpression) exprNode() {}
 // AttributePath represents an attribute path. Both URIPrefix and SubAttr are
 // optional values and can be nil.
 // e.g. urn:ietf:params:scim:schemas:core:2.0:User:name.givenName
-//      ^                                          ^    ^
-//      URIPrefix                                  |    SubAttribute
-//                                                 AttributeName
+//
+//	^                                          ^    ^
+//	URIPrefix                                  |    SubAttribute
+//	                                           AttributeName                                                AttributeName
 type AttributePath struct {
 	URIPrefix     *string
 	AttributeName string
@@ -100,10 +103,11 @@ type CompareOperator string
 
 // Expression is a type to assign to implemented expressions.
 // Valid expressions are:
-//	- ValuePath
-//	- AttributeExpression
-//	- LogicalExpression
-// 	- NotExpression
+//   - ValuePath
+//   - AttributeExpression
+//   - LogicalExpression
+//   - NotExpression
+//   - PrecedenceExpression
 type Expression interface {
 	exprNode()
 }
@@ -122,6 +126,16 @@ func (*LogicalExpression) exprNode() {}
 
 // LogicalOperator represents a logical operation such as 'and' / 'or'.
 type LogicalOperator string
+
+type PrecedenceExpression struct {
+	Expression Expression
+}
+
+func (e PrecedenceExpression) String() string {
+	return fmt.Sprintf("(%v)", e.Expression)
+}
+
+func (*PrecedenceExpression) exprNode() {}
 
 // NotExpression represents an 'not' node.
 type NotExpression struct {

@@ -4,7 +4,7 @@ import (
 	"github.com/di-wu/parser"
 	"github.com/di-wu/parser/ast"
 	"github.com/scim2/filter-parser/v2/internal/grammar"
-	"github.com/scim2/filter-parser/v2/internal/types"
+	typ "github.com/scim2/filter-parser/v2/internal/types"
 )
 
 // ParseFilter parses the given raw data as an Expression.
@@ -139,6 +139,19 @@ func (p config) parseFilterValue(node *ast.Node) (Expression, error) {
 			return nil, err
 		}
 		return &NotExpression{
+			Expression: exp,
+		}, nil
+	case typ.FilterPrecedence:
+		children := node.Children()
+		if l := len(children); l != 1 {
+			return nil, invalidLengthError(typ.FilterPrecedence, 1, l)
+		}
+
+		exp, err := p.parseFilterOr(children[0])
+		if err != nil {
+			return nil, err
+		}
+		return &PrecedenceExpression{
 			Expression: exp,
 		}, nil
 	case typ.FilterOr:
