@@ -35,19 +35,16 @@ func FilterNot(p *ast.Parser) (*ast.Node, error) {
 			op.And{
 				parser.CheckStringCI("not"),
 				op.MinZero(SP),
-				'(',
-				FilterOr,
-				op.MinZero(SP),
-				')',
+				FilterParentheses,
 			},
 			op.And{
 				parser.CheckStringCI("not"),
 				op.MinZero(SP),
-				//	FilterValue,
 				FilterOr,
 			},
 		},
-	})
+	},
+	)
 }
 
 func FilterOr(p *ast.Parser) (*ast.Node, error) {
@@ -71,8 +68,8 @@ func FilterParentheses(p *ast.Parser) (*ast.Node, error) {
 		Type:        typ.FilterPrecedence,
 		TypeStrings: typ.Stringer,
 		Value: op.And{
-			'(',
 			op.MinZero(SP),
+			'(',
 			FilterOr,
 			op.MinZero(SP),
 			')',

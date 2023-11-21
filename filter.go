@@ -134,7 +134,7 @@ func (p config) parseFilterValue(node *ast.Node) (Expression, error) {
 			return nil, invalidLengthError(typ.FilterNot, 1, l)
 		}
 
-		exp, err := p.parseFilterOr(children[0])
+		exp, err := p.parseFilterValue(children[0])
 		if err != nil {
 			return nil, err
 		}

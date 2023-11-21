@@ -143,7 +143,7 @@ type NotExpression struct {
 }
 
 func (e NotExpression) String() string {
-	return fmt.Sprintf("not(%v)", e.Expression)
+	return fmt.Sprintf("not %v", e.Expression)
 }
 
 func (*NotExpression) exprNode() {}
@@ -151,9 +151,10 @@ func (*NotExpression) exprNode() {}
 // Path describes the target of a PATCH operation. Path can have an optional
 // ValueExpression and SubAttribute.
 // e.g. members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName
-//      ^       ^                                                ^
-//      |       ValueExpression                                  SubAttribute
-//      AttributePath
+//
+//	^       ^                                                ^
+//	|       ValueExpression                                  SubAttribute
+//	AttributePath
 type Path struct {
 	AttributePath   AttributePath
 	ValueExpression Expression
