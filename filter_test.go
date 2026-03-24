@@ -105,3 +105,54 @@ func TestParseFilter(t *testing.T) {
 		})
 	}
 }
+
+func TestParseFilter_precedence(t *testing.T) {
+	for _, tc := range []struct {
+		input string
+		want  string
+	}{
+		{
+			input: "(a eq \"1\" or b eq \"2\") and c eq \"3\"",
+			want:  "(a eq \"1\" or b eq \"2\") and c eq \"3\"",
+		},
+		{
+			input: "c eq \"3\" and (a eq \"1\" or b eq \"2\")",
+			want:  "c eq \"3\" and (a eq \"1\" or b eq \"2\")",
+		},
+		{
+			input: "(a eq \"1\" or b eq \"2\") and (c eq \"3\" or d eq \"4\")",
+			want:  "(a eq \"1\" or b eq \"2\") and (c eq \"3\" or d eq \"4\")",
+		},
+		{
+			input: "a eq \"1\" and (b eq \"2\" or c eq \"3\") and d eq \"4\"",
+			want:  "a eq \"1\" and (b eq \"2\" or c eq \"3\") and d eq \"4\"",
+		},
+		{
+			input: "a eq \"1\" or b eq \"2\" and c eq \"3\"",
+			want:  "a eq \"1\" or b eq \"2\" and c eq \"3\"",
+		},
+		{
+			input: "(a eq \"1\" and b eq \"2\") or c eq \"3\"",
+			want:  "a eq \"1\" and b eq \"2\" or c eq \"3\"",
+		},
+		{
+			input: "(a eq \"1\")",
+			want:  "a eq \"1\"",
+		},
+		{
+			input: "a eq \"1\" or (b eq \"2\" and c eq \"3\")",
+			want:  "a eq \"1\" or b eq \"2\" and c eq \"3\"",
+		},
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			exp, err := ParseFilter([]byte(tc.input))
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := fmt.Sprintf("%v", exp)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}

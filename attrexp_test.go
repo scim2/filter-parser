@@ -24,7 +24,7 @@ func ExampleParseAttrExp_sw() {
 func TestParseNumber(t *testing.T) {
 	for _, test := range []struct {
 		nStr     string
-		expected interface{}
+		expected any
 	}{
 		{
 			nStr:     "-5.1e-2",

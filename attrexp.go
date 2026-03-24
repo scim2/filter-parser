@@ -65,7 +65,7 @@ func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 
 	var (
 		compareOp    = CompareOperator(strings.ToLower(children[1].Value))
-		compareValue interface{}
+		compareValue any
 	)
 	switch node := children[2]; node.Type {
 	case typ.False:
@@ -96,7 +96,7 @@ func (p config) parseAttrExp(node *ast.Node) (AttributeExpression, error) {
 	}, nil
 }
 
-func (p config) parseNumber(node *ast.Node) (interface{}, error) {
+func (p config) parseNumber(node *ast.Node) (any, error) {
 	var frac, exp bool
 	var nStr string
 	for _, node := range node.Children() {

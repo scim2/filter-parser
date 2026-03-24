@@ -36,7 +36,7 @@ const (
 type AttributeExpression struct {
 	AttributePath AttributePath
 	Operator      CompareOperator
-	CompareValue  interface{}
+	CompareValue  any
 }
 
 func (e AttributeExpression) String() string {
@@ -54,12 +54,13 @@ func (e AttributeExpression) String() string {
 
 func (*AttributeExpression) exprNode() {}
 
-// AttributePath represents an attribute path. Both URIPrefix and SubAttr are
-// optional values and can be nil.
-// e.g. urn:ietf:params:scim:schemas:core:2.0:User:name.givenName
-//      ^                                          ^    ^
-//      URIPrefix                                  |    SubAttribute
-//                                                 AttributeName
+// AttributePath represents an attribute path with an optional URIPrefix and
+// SubAttribute.
+//
+// Example: urn:ietf:params:scim:schemas:core:2.0:User:name.givenName
+//   - URIPrefix: urn:ietf:params:scim:schemas:core:2.0:User
+//   - AttributeName: name
+//   - SubAttribute: givenName
 type AttributePath struct {
 	URIPrefix     *string
 	AttributeName string
@@ -100,10 +101,10 @@ type CompareOperator string
 
 // Expression is a type to assign to implemented expressions.
 // Valid expressions are:
-//	- ValuePath
-//	- AttributeExpression
-//	- LogicalExpression
-// 	- NotExpression
+//   - ValuePath
+//   - AttributeExpression
+//   - LogicalExpression
+//   - NotExpression
 type Expression interface {
 	exprNode()
 }
@@ -115,7 +116,19 @@ type LogicalExpression struct {
 }
 
 func (e LogicalExpression) String() string {
-	return fmt.Sprintf("%v %s %v", e.Left, e.Operator, e.Right)
+	left := fmt.Sprintf("%v", e.Left)
+	if e.Operator == AND {
+		if l, ok := e.Left.(*LogicalExpression); ok && l.Operator == OR {
+			left = fmt.Sprintf("(%v)", e.Left)
+		}
+	}
+	right := fmt.Sprintf("%v", e.Right)
+	if e.Operator == AND {
+		if r, ok := e.Right.(*LogicalExpression); ok && r.Operator == OR {
+			right = fmt.Sprintf("(%v)", e.Right)
+		}
+	}
+	return fmt.Sprintf("%s %s %s", left, e.Operator, right)
 }
 
 func (*LogicalExpression) exprNode() {}
@@ -134,12 +147,13 @@ func (e NotExpression) String() string {
 
 func (*NotExpression) exprNode() {}
 
-// Path describes the target of a PATCH operation. Path can have an optional
+// Path describes the target of a PATCH operation with an optional
 // ValueExpression and SubAttribute.
-// e.g. members[value eq "2819c223-7f76-453a-919d-413861904646"].displayName
-//      ^       ^                                                ^
-//      |       ValueExpression                                  SubAttribute
-//      AttributePath
+//
+// Example: members[value eq "2819c223-..."].displayName
+//   - AttributePath: members
+//   - ValueExpression: value eq "2819c223-..."
+//   - SubAttribute: displayName
 type Path struct {
 	AttributePath   AttributePath
 	ValueExpression Expression
