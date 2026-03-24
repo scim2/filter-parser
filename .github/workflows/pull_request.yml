@@ -7,7 +7,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - run: go install github.com/jdeflander/goarrange@latest
+      - run: go install github.com/jdeflander/goarrange@v1.0.0
       - run: test -z "$(goarrange run -r -d)"
 
   lint:
@@ -17,8 +17,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
         with:
+          version: v2.11.3
+          install-mode: goinstall
           args: -E misspell,godot,whitespace
 
   test:
