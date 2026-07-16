@@ -1,8 +1,8 @@
 package grammar
 
 import (
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/ast"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/ast"
 	"github.com/scim2/filter-parser/v2/internal/types"
 )
 

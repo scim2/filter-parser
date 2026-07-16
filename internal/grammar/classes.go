@@ -1,8 +1,8 @@
 package grammar
 
 import (
-	"github.com/di-wu/parser"
-	"github.com/di-wu/parser/op"
+	"github.com/q-uint/parser"
+	"github.com/q-uint/parser/op"
 )
 
 func Alpha(p *parser.Parser) (*parser.Cursor, bool) {
